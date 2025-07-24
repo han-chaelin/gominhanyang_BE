@@ -1,10 +1,10 @@
 @host = http://127.0.0.1:5000
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0YTIyN2MyN2I2NmM1NjJlOWY5Y2M5Iiwibmlja25hbWUiOiJcdWFjZTBcdWJiZmNcdWQ1NThcdWIwZTUiLCJleHAiOjE3NTAwOTU4MTR9.u_sa7ZvekiPtW4jBEtJeKndB5ZaNMUF-qaQ9ZvYdF9Q
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjgzYmY1NmM2MTc3ZWU5N2Y4NDkyZmJkIiwibmlja25hbWUiOiJcdWFjZTBcdWJiZmNcdWQ1NThcdWIwZTUiLCJleHAiOjE3NTM0NTA3OTd9.wCjJUIJmv8BRiEjjWUHzCoQu9vT0rZ-lkXmcx3-uZcw
 POST {{host}}/api/users/signup
 Content-Type: application/json
 
 {
-  "nickname": "꼬마개발자",
+  "nickname": "",
   "age": 25,
   "gender": "W",
   "address": "Seoul",
@@ -192,4 +192,15 @@ Content-Type: application/json
 
 {
   "partial_letter": "요즘 학교생활이 너무 힘들어요. 친구들이 저를 피하는 것 같고..."
+}
+
+### 만족도 저장 테스트
+POST http://localhost:5000/satisfaction/
+Content-Type: application/json
+Authorization: Bearer {{your_token_here}}
+
+{
+  "letter_id": "6846b8c1d1dfc444dd7b0690", 
+  "rating": 5,
+  "reason": "너무 따뜻한 답장이었어요."
 }
