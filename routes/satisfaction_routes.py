@@ -8,7 +8,7 @@ from datetime import datetime
 
 satisfaction_bp = Blueprint('satisfaction', __name__)
 
-@satisfaction_bp.route('/', methods=['POST'])
+@satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @swag_from({
     'tags': ['Satisfaction'],
