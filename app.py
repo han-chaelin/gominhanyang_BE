@@ -96,7 +96,7 @@ def create_app():
     app.register_blueprint(item_routes, url_prefix="/item")
     app.register_blueprint(letter_routes, url_prefix="/letter")
     app.register_blueprint(question_bp, url_prefix="/question") 
-    app.register_blueprint(satisfaction_bp)
+    app.register_blueprint(satisfaction_bp, url_prefix="/satisfaction", strict_slashes=False)
 
 
     # ✅ 보호된 API 예시

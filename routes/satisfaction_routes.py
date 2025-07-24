@@ -5,13 +5,8 @@ from utils.response import json_kor
 from utils.auth import token_required
 from bson import ObjectId
 from datetime import datetime
-satisfaction_bp = Blueprint(
-    'satisfaction',
-    __name__,
-    url_prefix='/satisfaction',      
-    strict_slashes=False              
-)
 
+satisfaction_bp = Blueprint('satisfaction', __name__)
 
 @satisfaction_bp.route('/', methods=['POST'])
 @token_required
