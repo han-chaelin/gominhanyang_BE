@@ -5,8 +5,13 @@ from utils.response import json_kor
 from utils.auth import token_required
 from bson import ObjectId
 from datetime import datetime
+satisfaction_bp = Blueprint(
+    'satisfaction',
+    __name__,
+    url_prefix='/satisfaction',      
+    strict_slashes=False              
+)
 
-satisfaction_bp = Blueprint('satisfaction', __name__)
 
 @satisfaction_bp.route('/', methods=['POST'])
 @token_required
@@ -57,7 +62,7 @@ def save_satisfaction():
     from_id = comment.get("from")
     user_exists = db.user.find_one({"_id": from_id}) if isinstance(from_id, ObjectId) else None
     responder_type = "user" if user_exists else "AI"
-
+    
     # 만족도 평가 저장
     evaluation = {
         "letter_id": str(letter_id),
