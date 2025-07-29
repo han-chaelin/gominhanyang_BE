@@ -8,6 +8,7 @@ from openai import OpenAI
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from utils.db import db
+from bson import ObjectId
 
 # 환경변수 로드
 #load_dotenv()
@@ -65,7 +66,7 @@ def auto_reply_to_old_letters():
     for mail in letters:
         reply = generate_ai_reply(mail.get('content', ''))
         comment = {
-            "_id": str(uuid.uuid4()),
+            "_id": ObjectId(),
             "from": "온달",
             "to": mail["from"],
             "content": reply,
