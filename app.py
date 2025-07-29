@@ -13,6 +13,7 @@ from routes.item_routes import item_routes
 from routes.letter_routes import letter_routes
 from routes.question import question_bp 
 from routes.satisfaction_routes import satisfaction_bp
+import logging
 
 # JWT 인증 데코레이터 (Authorization 헤더 사용)
 def token_required(f):
@@ -49,7 +50,20 @@ def create_app():
     app.config['SWAGGER'] = {
     'title': '마음의 항해 API 문서',
     'uiversion': 3
-}
+    }
+
+    # ✅ 요청 로깅 설정
+    logging.basicConfig(level=logging.INFO)
+
+    @app.before_request
+    def log_request_info():
+        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        logging.info(
+            f"[{request.method}] {request.url} "
+            f"IP={client_ip} "
+            f"UA={request.user_agent.string} "
+            f"DATA={request.get_data(as_text=True)}"
+        )
 
     # ✅ Swagger 설정
     swagger_config = {
