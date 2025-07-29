@@ -1,11 +1,10 @@
 @host = http://127.0.0.1:5000
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjgzYmY1NmM2MTc3ZWU5N2Y4NDkyZmJkIiwibmlja25hbWUiOiJcdWFjZTBcdWJiZmNcdWQ1NThcdWIwZTUiLCJleHAiOjE3NTM0NTA3OTd9.wCjJUIJmv8BRiEjjWUHzCoQu9vT0rZ-lkXmcx3-uZcw
-POST {{host}}/api/users/signup
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0MTMyNjJkMWRmYzQ0NGRkN2IwNjZlIiwibmlja25hbWUiOiJtYXN0ZXIwMSIsImV4cCI6MTc1Mzg3MjUzOH0.SzJbT18YLmHAR3d3K8x2Q_M1kl1f5QMYgb4F1Dsvi9U
 Content-Type: application/json
 
 {
-  "nickname": "",
-  "age": 25,
+  "nickname": "한채린",
+  "age": 24,
   "gender": "W",
   "address": "Seoul",
   "phone": "01012345678"
@@ -16,7 +15,7 @@ POST {{host}}/api/users/login
 Content-Type: application/json
 
 {
-  "nickname": "고민하냥"
+  "nickname": "master01"
 }
 
 ### 만족도 설문
@@ -45,8 +44,8 @@ Content-Type: application/json
 Authorization: {{token}}
 
 {
-  "age": 23,
-  "gender": "M"
+  "age": 24,
+  "gender": "W"
 }
 
 ### 🎁 포인트 적립 (편지 작성)
