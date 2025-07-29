@@ -24,6 +24,10 @@ def json_kor(data, status=200):
         status=status
     )
 def get_nickname(user_id):
+    if isinstance(user_id, str) and not ObjectId.is_valid(user_id):
+        # 문자열인데 ObjectId로 변환 불가능 → AI 닉네임 (예: "온달")
+        return user_id
+
     try:
         if not isinstance(user_id, ObjectId):
             user_id = ObjectId(user_id)
@@ -31,6 +35,7 @@ def get_nickname(user_id):
         return user.get("nickname", "알 수 없음") if user else "알 수 없음"
     except Exception:
         return "알 수 없음"
+
       
 # AI fallback pool
 AI_REPLY_POOL = [
