@@ -14,6 +14,7 @@ from routes.item_routes import item_routes
 from routes.letter_routes import letter_routes
 from routes.question import question_bp
 from routes.satisfaction_routes import satisfaction_bp
+from routes.report_routes import report_routes
 
 
 # JWT 인증 데코레이터
@@ -119,9 +120,7 @@ def create_app():
         )
         return response
 
-    # --------------------------
-    # Swagger 설정
-    # --------------------------
+    # ✅ Swagger 설정
     swagger_config = {
         "headers": [],
         "specs": [{
@@ -155,26 +154,21 @@ def create_app():
 
     Swagger(app, config=swagger_config, template=swagger_template)
 
-    # --------------------------
-    # 루트 라우트
-    # --------------------------
+    # ✅ 루트 확인용 라우트 추가
     @app.route('/', methods=['GET'])
     def root():
         return '마음의 항해 백엔드가 정상 작동 중입니다.'
 
-    # --------------------------
-    # 블루프린트 등록
-    # --------------------------
+    # ✅ 블루프린트 등록
     app.register_blueprint(user_test, url_prefix="/api/users")
     app.register_blueprint(reward_routes, url_prefix="/reward")
     app.register_blueprint(item_routes, url_prefix="/item")
     app.register_blueprint(letter_routes, url_prefix="/letter")
     app.register_blueprint(question_bp, url_prefix="/question")
     app.register_blueprint(satisfaction_bp, url_prefix="/satisfaction", strict_slashes=False)
-
-    # --------------------------
-    # 보호된 API 예시
-    # --------------------------
+    app.register_blueprint(report_routes, url_prefix="/api")
+    
+    # ✅ 보호된 API 예시
     @app.route("/api/users/protected", methods=["GET"])
     @token_required
     def protected():

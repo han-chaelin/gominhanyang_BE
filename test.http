@@ -1,7 +1,8 @@
 @host = http://127.0.0.1:5000
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0MTMyNjJkMWRmYzQ0NGRkN2IwNjZlIiwibmlja25hbWUiOiJtYXN0ZXIwMSIsImV4cCI6MTc1Mzg3MjUzOH0.SzJbT18YLmHAR3d3K8x2Q_M1kl1f5QMYgb4F1Dsvi9U
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0MTMyNjJkMWRmYzQ0NGRkN2IwNjZlIiwibmlja25hbWUiOiJtYXN0ZXIwMSIsImV4cCI6MTc1NzMyNzc4N30.9s-4ao1qqE_nGcxsHbOQpLPbZrVBdGJhbH4hhoLuSO4
 Content-Type: application/json
 
+### 🔐 회원가입
 {
   "nickname": "한채린",
   "age": 24,
@@ -17,6 +18,12 @@ Content-Type: application/json
 {
   "nickname": "master01"
 }
+
+### 📊 월간 리포트 조회
+GET {{host}}/api/report/monthly
+Content-Type: application/json
+Authorization: {{token}}
+
 
 ### 만족도 설문
 POST {{host}}/satisfaction
