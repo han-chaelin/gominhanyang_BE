@@ -1,11 +1,13 @@
 @host = http://127.0.0.1:5000
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0MTMyNjJkMWRmYzQ0NGRkN2IwNjZlIiwibmlja25hbWUiOiJtYXN0ZXIwMSIsImV4cCI6MTc1Nzc2NjcyNn0.vOu1XU3204f53tRu4Yj2aBVPWoPE0q47RDDWvacWJGk
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhjNDU0NThkMjBmMmNhNzRiYmFkYTM0Iiwibmlja25hbWUiOiJtYXN0ZXIwMSIsImV4cCI6MTc1Nzc4NDgyOH0.dIRZC3B5g0i7Y2uL9gkpz6gHfS8EXA-TGjthJeev0bg
+
+
 ### 🔐 회원가입
 POST {{host}}/api/users/signup
 Content-Type: application/json
 
 {
-  "nickname": "master",
+  "nickname": "master01",
   "age": 2002,
   "gender": "W",
   "address": "Seoul",
@@ -36,7 +38,7 @@ Content-Type: application/json
 Authorization: {{token}}
 
 ### ✍ 돌아보는 한마디 작성
-POST {{host}}/api/report/comment?year=2025&month=8
+POST {{host}}/api/report/comment?year=2025&month=9
 Content-Type: application/json
 Authorization: {{token}}
 
@@ -131,8 +133,8 @@ Authorization: {{token}}
 
 {
   "to": "self",
-  "content": "시험을 봤는데 시험점수가 너무 낮게 나와서 속상해 기말에 만회해야지지",
-  "emotion": "우울"
+  "content": "지금까지 열심히 작업한 결과물이 날라갔어. 너무 화나.",
+  "emotion": "분노"
 }
 
 ### 💌 편지 전송: 자원봉사자
@@ -153,8 +155,8 @@ Authorization: {{token}}
 
 {
   "to": "random",
-  "content": "슈퍼개발자가 되고 말겠어요!",
-  "emotion": "기쁨"
+  "content": "지금 너무나도 졸려서 자고 싶어요. 하지만 할 일이 너무 많아요.",
+  "emotion": "슬픔"
 }
 
 
