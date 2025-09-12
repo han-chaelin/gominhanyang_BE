@@ -1,11 +1,12 @@
 @host = http://127.0.0.1:5000
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0MTMyNjJkMWRmYzQ0NGRkN2IwNjZlIiwibmlja25hbWUiOiJtYXN0ZXIwMSIsImV4cCI6MTc1NzMyNzc4N30.9s-4ao1qqE_nGcxsHbOQpLPbZrVBdGJhbH4hhoLuSO4
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg0MTMyNjJkMWRmYzQ0NGRkN2IwNjZlIiwibmlja25hbWUiOiJtYXN0ZXIwMSIsImV4cCI6MTc1Nzc2NjcyNn0.vOu1XU3204f53tRu4Yj2aBVPWoPE0q47RDDWvacWJGk
+### 🔐 회원가입
+POST {{host}}/api/users/signup
 Content-Type: application/json
 
-### 🔐 회원가입
 {
-  "nickname": "한채린",
-  "age": 24,
+  "nickname": "master",
+  "age": 2002,
   "gender": "W",
   "address": "Seoul",
   "phone": "01012345678"
@@ -23,6 +24,25 @@ Content-Type: application/json
 GET {{host}}/api/report/monthly
 Content-Type: application/json
 Authorization: {{token}}
+
+### 📊 전체 월별 리포트 조회
+GET {{host}}/api/report/monthly/all
+Content-Type: application/json
+Authorization: {{token}}
+
+### 📊 특정 월 리포트 조회
+GET {{host}}/api/report/monthly?year=2025&month=8
+Content-Type: application/json
+Authorization: {{token}}
+
+### ✍ 돌아보는 한마디 작성
+POST {{host}}/api/report/comment?year=2025&month=8
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "comment": "이번 달은 힘들었지만 많은 걸 배운 시간이었어요."
+}
 
 
 ### 만족도 설문
@@ -51,8 +71,7 @@ Content-Type: application/json
 Authorization: {{token}}
 
 {
-  "age": 24,
-  "gender": "W"
+  "phone": "01000000000"
 }
 
 ### 🎁 포인트 적립 (편지 작성)
