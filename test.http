@@ -1,6 +1,7 @@
-@host = http://127.0.0.1:5000
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhjNDU0NThkMjBmMmNhNzRiYmFkYTM0Iiwibmlja25hbWUiOiJtYXN0ZXIwMSIsImV4cCI6MTc1Nzc4NDgyOH0.dIRZC3B5g0i7Y2uL9gkpz6gHfS8EXA-TGjthJeev0bg
+# @host = http://127.0.0.1:5000
+@host = https://dev-server-4t3n.onrender.com
 
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhjNDU0MWJkMjBmMmNhNzRiYmFkYTMyIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NTgwMTU1Mjd9.cLjbD7WsvIf4dfwpcV7mMsXbzaDNBDSlONswTdTW7ZA
 
 ### 🔐 회원가입
 POST {{host}}/api/users/signup
@@ -8,8 +9,11 @@ Content-Type: application/json
 
 {
   "nickname": "master01",
+  "password": "12345678",
   "age": 2002,
   "gender": "W",
+  "status": "대학생",
+  "email": "master01@example.com", 
   "address": "Seoul",
   "phone": "01012345678"
 }
@@ -19,7 +23,7 @@ POST {{host}}/api/users/login
 Content-Type: application/json
 
 {
-  "nickname": "master01"
+  "nickname": "master"
 }
 
 ### 📊 월간 리포트 조회
@@ -33,7 +37,7 @@ Content-Type: application/json
 Authorization: {{token}}
 
 ### 📊 특정 월 리포트 조회
-GET {{host}}/api/report/monthly?year=2025&month=8
+GET {{host}}/api/report/monthly?year=2025&month=9
 Content-Type: application/json
 Authorization: {{token}}
 
@@ -74,6 +78,16 @@ Authorization: {{token}}
 
 {
   "phone": "01000000000"
+}
+
+### 비밀번호 변경
+POST {{host}}/api/users/password/change
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "current_password": "12345678",
+  "new_password": "00000000"
 }
 
 ### 🎁 포인트 적립 (편지 작성)
