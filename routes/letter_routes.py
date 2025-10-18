@@ -2,6 +2,8 @@ from flask import Blueprint, request, Response
 from utils.db import db
 from utils.auth import token_required
 from routes.reward_routes import grant_point_by_action
+from utils.notify import notify_random_received, notify_reply_received
+import threading
 import uuid
 import random
 import os
@@ -11,7 +13,9 @@ from openai import OpenAI
 from flasgger import swag_from
 from bson import ObjectId
 
-
+def fire_and_forget(fn, *args, **kwargs):
+    t = threading.Thread(target=fn, args=args, kwargs=kwargs, daemon=True)
+    t.start()
 
 letter_routes = Blueprint('letter_routes', __name__, url_prefix='/letter')
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -241,6 +245,19 @@ def send_letter():
     letter = {"_id": ObjectId(), "from": sender, "to": receiver, "title": title,"emotion": emotion, "content": content, "status": 'sent',
               "saved": to_type in ['self', 'volunteer'], "created_at": datetime.now()}
     db.letter.insert_one(letter)
+
+    # 🔔 랜덤 수신 메일 알림 (random일 때만)
+    if to_type == 'random' and isinstance(receiver, ObjectId):
+        from flask import current_app as app
+        ok, err = notify_random_received(str(receiver), str(letter['_id']))
+        if not ok:
+            app.logger.warning(f"[mail] random_received fail: {err}")
+
+    '''
+    if to_type == 'random' and isinstance(receiver, ObjectId):
+        # 비동기로 전송 (요청 지연 방지)
+        fire_and_forget(notify_random_received, str(receiver), str(letter['_id']))
+    '''
     
     #######유저 테스트용 - 실제 배포 시에는 삭제
     """if to_type == 'random':
@@ -507,6 +524,12 @@ def reply_letter():
     comment = {'_id': ObjectId(), 'from': ObjectId(request.user_id),'to': orig.get('from'), 'content': text, 'read': False,'created_at': datetime.now(), 'original_letter_id': lid}
     db.comment.insert_one(comment)
     db.letter.update_one({'_id': lid}, {'$set': {'status': 'replied', 'replied_at': datetime.now()}})
+
+    # 🔔 답장 도착 메일 알림 (원 발신자에게)
+    orig_sender = orig.get('from')  # ObjectId
+    if isinstance(orig_sender, ObjectId):
+        fire_and_forget(notify_reply_received, str(orig_sender), str(lid))
+
     return json_kor({'message': '답장 완료'}, 200)
 
 @letter_routes.route('/replied-to-me', methods=['GET'])
