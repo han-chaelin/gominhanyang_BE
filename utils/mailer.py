@@ -43,6 +43,9 @@ def send_email(to_email: str, subject: str, html: str):
     msg["From"] = _format_from_header(EMAIL_FROM or SMTP_USER or "")
     msg["To"] = _format_to_header(to_email)
 
+    # 문자열/불린 혼용을 한 번만 정규화
+    use_tls = EMAIL_USE_TLS if isinstance(EMAIL_USE_TLS, bool) else str(EMAIL_USE_TLS).lower() == "true"
+
     try:
         # 465면 SSL, 587이면 STARTTLS
         if str(SMTP_PORT) == "465":
@@ -50,9 +53,7 @@ def send_email(to_email: str, subject: str, html: str):
             smtp.ehlo()
         else:
             smtp = smtplib.SMTP(SMTP_HOST, int(SMTP_PORT), timeout=10)
-            smtp.ehlo()
-            # 일부 환경에서 EMAIL_USE_TLS가 문자열("true"/"false")일 수 있어 bool로 보정
-            use_tls = EMAIL_USE_TLS if isinstance(EMAIL_USE_TLS, bool) else str(EMAIL_USE_TLS).lower() == "true"
+            smtp.ehlo()         
             if use_tls:
                 smtp.starttls()
                 smtp.ehlo()
@@ -60,18 +61,21 @@ def send_email(to_email: str, subject: str, html: str):
         if SMTP_USER and SMTP_PASSWORD:
             smtp.login(SMTP_USER, SMTP_PASSWORD)
 
+        # Envelope From 은 주소만 사용해야 함 (헤더의 표시명/인코딩 제거)
+        envelope_from = parseaddr(msg["From"])[1] or (SMTP_USER or "")
+
         # 연결이 정말 되었는지 간단 체크 (sock 유무)
         if getattr(smtp, "sock", None) is None:
             try:
                 smtp.connect(SMTP_HOST, int(SMTP_PORT))
-                use_tls = EMAIL_USE_TLS if isinstance(EMAIL_USE_TLS, bool) else str(EMAIL_USE_TLS).lower() == "true"
                 if use_tls and str(SMTP_PORT) != "465":
                     smtp.starttls(); smtp.ehlo()
             except Exception as e:
                 smtp.quit()
                 return False, f"connect() failed: {e}"
 
-        smtp.sendmail(msg["From"], [parseaddr(to_email)[1] or to_email], msg.as_string())
+        # 여기서 envelope_from 적용
+        smtp.sendmail(envelope_from, [parseaddr(to_email)[1] or to_email], msg.as_string())
         smtp.quit()
         return True, None
     except Exception as e:

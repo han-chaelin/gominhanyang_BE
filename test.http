@@ -1,7 +1,7 @@
 # @host = http://127.0.0.1:5000
 @host = https://dev-server-4t3n.onrender.com
 
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhmMzU0NzA1YjFiZGFlYzJlMjg0MWVhIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjA4NjU2Mjl9.uGjM_elEI_cOMC0Hh82u7dJWFkXVUGtpI8ZkpSmltEc
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhmMzU0NzA1YjFiZGFlYzJlMjg0MWVhIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjA4NjY5NTN9.ZIooJC6LIBE8n34tCL5IZjQ4suKPE7lybTIilwv9bso
 
 ### 🔐 회원가입
 POST {{host}}/api/users/signup
