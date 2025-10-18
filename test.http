@@ -1,7 +1,8 @@
 # @host = http://127.0.0.1:5000
 @host = https://dev-server-4t3n.onrender.com
 
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhmMzU0NzA1YjFiZGFlYzJlMjg0MWVhIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjA4NjM3NjV9.rRH_FYCEYiOorPEvec9UGzlovWSt235pyY5B7Y_7SuQ
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhmMzU0NzA1YjFiZGFlYzJlMjg0MWVhIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjA4NjU2Mjl9.uGjM_elEI_cOMC0Hh82u7dJWFkXVUGtpI8ZkpSmltEc
+
 ### 🔐 회원가입
 POST {{host}}/api/users/signup
 Content-Type: application/json
@@ -24,6 +25,121 @@ Content-Type: application/json
 {
   "nickname": "master",
   "password": "00000000"
+}
+
+### 사용자 정보 조회
+GET {{host}}/api/users/me
+Authorization: {{token}}
+
+### 사용자 정보 수정
+PATCH {{host}}/api/users/update
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "phone": "01000000000"
+}
+
+### 비밀번호 변경
+POST {{host}}/api/users/password/change
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "current_password": "12345678",
+  "new_password": "00000000"
+}
+
+### 🔒 인증 확인
+GET {{host}}/api/users/protected
+Authorization: {{token}}
+
+### 💌 편지 전송: 나에게
+POST {{host}}/letter/send
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "to": "self",
+  "content": "지금까지 열심히 작업한 결과물이 날라갔어. 너무 화나.",
+  "emotion": "분노"
+}
+
+### 💌 편지 전송: 자원봉사자
+POST {{host}}/letter/send
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "to": "volunteer",
+  "content": "힘들 때 위로가 필요해요.",
+  "emotion": "슬픔"
+}
+
+### 💌 편지 전송: 랜덤
+POST {{host}}/letter/send
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "to": "random",
+  "content": "평소 좋아하던 친구한테 고백 받았어요.",
+  "emotion": "기쁨"
+}
+
+### 📮 나에게 온 미답장 편지 조회
+GET {{host}}/letter/random
+Authorization: {{token}}
+
+### 📄 편지 상세 조회
+GET {{host}}/letter/6840910dd76379b2252edddf
+Authorization: {{token}}
+
+### ✍️ 답장 보내기
+POST {{host}}/letter/reply
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "letter_id": "68f35238651a80aa99134bfd",
+  "reply": "유캔두잇"
+}
+
+### 📬 내가 받은 답장된 편지 목록
+GET {{host}}/letter/replied-to-me
+Authorization: {{token}}
+
+### 💬 특정 편지의 댓글 목록
+GET {{host}}/letter/for-letter/6828cecaf5af42880f75e6f9
+Authorization: {{token}}
+
+### 💾 내가 저장한 편지 목록
+GET {{host}}/letter/saved
+Authorization: {{token}}
+
+### 🤖 24시간 경과 자동 답장 트리거
+POST {{host}}/letter/auto-reply
+
+### 🤖 AI 질문 옵션 조회
+GET {{host}}/letter/reply-options?letter_id=6834970e7e5bd7c1323279e0
+Authorization: {{token}}
+
+### 감정 기반 질문 생성
+POST {{host}}/question/generate
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "emotion": "불안"
+}
+
+### 글쓰기 도움 질문 생성
+POST {{host}}/question/help
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "partial_letter": "요즘 학교생활이 너무 힘들어요. 친구들이 저를 피하는 것 같고..."
 }
 
 ### 📊 월간 리포트 조회
@@ -50,7 +166,6 @@ Authorization: {{token}}
   "comment": "이번 달은 힘들었지만 많은 걸 배운 시간이었어요."
 }
 
-
 ### 만족도 설문
 POST {{host}}/satisfaction
 Content-Type: application/json
@@ -62,33 +177,20 @@ Authorization: {{token}}
   "reason": "너무 신기해요."
 }
 
-
-### 🔒 인증 확인
-GET {{host}}/api/users/protected
-Authorization: {{token}}
-
-### 사용자 정보 조회
-GET {{host}}/api/users/me
-Authorization: {{token}}
-
-### 사용자 정보 수정
-PATCH {{host}}/api/users/update
+### 만족도 저장 테스트
+POST http://localhost:5000/satisfaction/
 Content-Type: application/json
-Authorization: {{token}}
+Authorization: Bearer {{your_token_here}}
 
 {
-  "phone": "01000000000"
+  "letter_id": "6846b8c1d1dfc444dd7b0690", 
+  "rating": 5,
+  "reason": "너무 따뜻한 답장이었어요."
 }
 
-### 비밀번호 변경
-POST {{host}}/api/users/password/change
-Content-Type: application/json
-Authorization: Bearer {{token}}
 
-{
-  "current_password": "12345678",
-  "new_password": "00000000"
-}
+
+#################### 아이템 기능 ####################
 
 ### 🎁 포인트 적립 (편지 작성)
 POST {{host}}/reward/grant
@@ -135,113 +237,12 @@ Authorization: {{token}}
 GET {{host}}/item/{{item_id}}
 Authorization: {{token}}
 
-### 🧾 아이템 카탈로그 조회 (비인증)
-GET {{host}}/item/catalog
-
----
-
-### 💌 편지 전송: 나에게
-POST {{host}}/letter/send
-Content-Type: application/json
-Authorization: {{token}}
-
-{
-  "to": "self",
-  "content": "지금까지 열심히 작업한 결과물이 날라갔어. 너무 화나.",
-  "emotion": "분노"
-}
-
-### 💌 편지 전송: 자원봉사자
-POST {{host}}/letter/send
-Content-Type: application/json
-Authorization: {{token}}
-
-{
-  "to": "volunteer",
-  "content": "힘들 때 위로가 필요해요.",
-  "emotion": "슬픔"
-}
-
-### 💌 편지 전송: 랜덤
-POST {{host}}/letter/send
-Content-Type: application/json
-Authorization: {{token}}
-
-{
-  "to": "random",
-  "content": "아무도 나를 찾지 않아서 외로워요.",
-  "emotion": "슬픔"
-}
-
-
-
-### 📮 나에게 온 미답장 편지 조회
-GET {{host}}/letter/random
-Authorization: {{token}}
-
-### 📄 편지 상세 조회
-GET {{host}}/letter/6840910dd76379b2252edddf
-Authorization: {{token}}
-
-### 🤖 AI 질문 옵션 조회
-GET {{host}}/letter/reply-options?letter_id=6834970e7e5bd7c1323279e0
-Authorization: {{token}}
-
-### ✍️ 답장 보내기
-POST {{host}}/letter/reply
-Content-Type: application/json
-Authorization: {{token}}
-
-{
-  "letter_id": "68f35238651a80aa99134bfd",
-  "reply": "유캔두잇"
-}
-
-### 📬 내가 받은 답장된 편지 목록
-GET {{host}}/letter/replied-to-me
-Authorization: {{token}}
-
-### 💬 특정 편지의 댓글 목록
-GET {{host}}/letter/for-letter/6828cecaf5af42880f75e6f9
-Authorization: {{token}}
-
-### 🤖 24시간 경과 자동 답장 트리거
-POST {{host}}/letter/auto-reply
-
-### 💾 내가 저장한 편지 목록
-GET {{host}}/letter/saved
-Authorization: {{token}}
-
-####특정 아이템 조회
+#### 특정 아이템 조회
 GET {{host}}/item/my?category=바다아이템
 Authorization: {{token}}
 Content-Type: application/json
 
-### 감정 기반 질문 생성 (generate)
-POST {{host}}/question/generate
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
+### 🧾 아이템 카탈로그 조회 (비인증)
+GET {{host}}/item/catalog
 
-{
-  "emotion": "불안"
-}
-
-### 글쓰기 도움 질문 생성 (help)
-POST {{host}}/question/help
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-
-{
-  "partial_letter": "요즘 학교생활이 너무 힘들어요. 친구들이 저를 피하는 것 같고..."
-}
-
-### 만족도 저장 테스트
-POST http://localhost:5000/satisfaction/
-Content-Type: application/json
-Authorization: Bearer {{your_token_here}}
-
-{
-  "letter_id": "6846b8c1d1dfc444dd7b0690", 
-  "rating": 5,
-  "reason": "너무 따뜻한 답장이었어요."
-}
+---
