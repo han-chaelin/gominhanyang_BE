@@ -21,7 +21,7 @@ def is_strong_password(pw: str) -> bool:
 
 
 # 신분/이메일
-ALLOWED_STATUS = ["무직","중/고등학생","대학생","유학생","주부","직장인","군인"]
+ALLOWED_STATUS = ["무직","중/고등학생","대학생","유학생","주부","직장인","군인","기타"]
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 def is_valid_email(v: str) -> bool:
