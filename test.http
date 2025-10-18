@@ -1,19 +1,18 @@
 # @host = http://127.0.0.1:5000
 @host = https://dev-server-4t3n.onrender.com
 
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhjNDU0MWJkMjBmMmNhNzRiYmFkYTMyIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NTgwMTU1Mjd9.cLjbD7WsvIf4dfwpcV7mMsXbzaDNBDSlONswTdTW7ZA
-
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhmMzU0NzA1YjFiZGFlYzJlMjg0MWVhIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjA4NjM3NjV9.rRH_FYCEYiOorPEvec9UGzlovWSt235pyY5B7Y_7SuQ
 ### 🔐 회원가입
 POST {{host}}/api/users/signup
 Content-Type: application/json
 
 {
-  "nickname": "채채",
-  "password": "20021110",
+  "nickname": "master",
+  "password": "00000000",
   "age": 2002,
   "gender": "W",
   "status": "대학생",
-  "email": "chelin02@naver.com", 
+  "email": "hanchelin02@gmail.com", 
   "address": "Seoul",
   "phone": "01012345678"
 }
@@ -23,7 +22,8 @@ POST {{host}}/api/users/login
 Content-Type: application/json
 
 {
-  "nickname": "master"
+  "nickname": "master",
+  "password": "00000000"
 }
 
 ### 📊 월간 리포트 조회
@@ -169,7 +169,7 @@ Authorization: {{token}}
 
 {
   "to": "random",
-  "content": "지금 너무나도 졸려서 자고 싶어요. 하지만 할 일이 너무 많아요.",
+  "content": "아무도 나를 찾지 않아서 외로워요.",
   "emotion": "슬픔"
 }
 
@@ -193,7 +193,7 @@ Content-Type: application/json
 Authorization: {{token}}
 
 {
-  "letter_id": "6840910dd76379b2252edddf",
+  "letter_id": "68f35238651a80aa99134bfd",
   "reply": "유캔두잇"
 }
 
