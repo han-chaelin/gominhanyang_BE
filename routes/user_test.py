@@ -64,12 +64,12 @@ def create_token(user_doc):
                     'type': 'object',
                     'properties': {
                         'nickname': {'type': 'string'},
-                        'password': {'type': 'string', 'minLength': PASSWORD_MIN_LEN}
+                        'password': {'type': 'string', 'minLength': PASSWORD_MIN_LEN},
                         'age': {'type': 'integer'},
                         'gender': {'type': 'string'},
                         'address': {'type': 'string'},
-                        'phone': {'type': 'string'}
-                        'status': {'type': 'string', 'enum': ALLOWED_STATUS}
+                        'phone': {'type': 'string'},
+                        'status': {'type': 'string', 'enum': ALLOWED_STATUS},
                         'email': {'type': 'string', 'format': 'email'},
                     },
                     'required': ['nickname', 'password', 'age', 'gender', 'status', 'email']

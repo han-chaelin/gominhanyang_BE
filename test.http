@@ -8,12 +8,12 @@ POST {{host}}/api/users/signup
 Content-Type: application/json
 
 {
-  "nickname": "master01",
-  "password": "12345678",
+  "nickname": "채채",
+  "password": "20021110",
   "age": 2002,
   "gender": "W",
   "status": "대학생",
-  "email": "master01@example.com", 
+  "email": "chelin02@naver.com", 
   "address": "Seoul",
   "phone": "01012345678"
 }

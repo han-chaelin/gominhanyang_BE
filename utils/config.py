@@ -38,3 +38,14 @@ LEVEL_UP_THRESHOLD = {
 # 8) 기타 공통 상수
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 PAGE_SIZE       = int(os.getenv("PAGE_SIZE", 20))
+
+# 9) ✉️ 이메일 / 알림 관련 설정 추가
+SMTP_HOST = os.getenv("SMTP_HOST")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+EMAIL_FROM = os.getenv("EMAIL_FROM", SMTP_USER or "")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
+
+# 이메일 템플릿 내 링크 기본 주소
+APP_BASE_URL = os.getenv("APP_BASE_URL", "https://gominhanyang.vercel.app")
