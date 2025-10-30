@@ -1,5 +1,5 @@
-# @host = http://127.0.0.1:5000
-@host = https://dev-server-4t3n.onrender.com
+@host = http://127.0.0.1:5000
+# @host = https://dev-server-4t3n.onrender.com
 
 @token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhmMzU0NzA1YjFiZGFlYzJlMjg0MWVhIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjE5MjE4Mjd9.OQUHONnr-xv6vIe8tngQNrvY1Otaq5vi6NVE6IBU9ME
 
@@ -8,12 +8,12 @@ POST {{host}}/api/users/signup
 Content-Type: application/json
 
 {
-  "nickname": "master",
-  "password": "00000000",
+  "nickname": "채채",
+  "password": "20021110",
   "age": 2002,
   "gender": "W",
   "status": "대학생",
-  "email": "hanchelin02@gmail.com", 
+  "email": "chelin02@naver.com", 
   "address": "Seoul",
   "phone": "01012345678"
 }

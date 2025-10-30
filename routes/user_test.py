@@ -1,5 +1,5 @@
 import datetime
-from flask import request, Blueprint, Response, make_response
+from flask import request, Blueprint, Response, current_app, make_response
 from flasgger import swag_from
 import jwt
 from bson.objectid import ObjectId
