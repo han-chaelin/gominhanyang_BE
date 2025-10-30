@@ -1,7 +1,7 @@
 @host = http://127.0.0.1:5000
 # @host = https://dev-server-4t3n.onrender.com
 
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhmMzU0NzA1YjFiZGFlYzJlMjg0MWVhIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjE5MjE4Mjd9.OQUHONnr-xv6vIe8tngQNrvY1Otaq5vi6NVE6IBU9ME
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjkwMzhmMjViNzY4OWJkNjM4YjY4OGU4Iiwibmlja25hbWUiOiJcdWNjNDRcdWNjNDQiLCJleHAiOjE3NjE5MjgwMDF9.HL1uuVqXXdvl_BXmclFVxhulm9uCoryWlK3JXs3YLfY
 
 ### 🔐 회원가입
 POST {{host}}/api/users/signup
@@ -23,8 +23,8 @@ POST {{host}}/api/users/login
 Content-Type: application/json
 
 {
-  "nickname": "master",
-  "password": "00000000"
+  "nickname": "채채",
+  "password": "20021110"
 }
 
 ### 사용자 정보 조회
@@ -101,8 +101,8 @@ Content-Type: application/json
 Authorization: {{token}}
 
 {
-  "letter_id": "68f35238651a80aa99134bfd",
-  "reply": "유캔두잇"
+  "letter_id": "6903918989fba08f654a44ea",
+  "reply": "우와 축하해요!"
 }
 
 ### 📬 내가 받은 답장된 편지 목록

@@ -1,4 +1,4 @@
-import smtplib
+import smtplib, os
 from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import formataddr, parseaddr
@@ -84,6 +84,34 @@ def send_email(to_email: str, subject: str, html: str):
         except:
             pass
         return False, str(e)
+    
+def send_email_entry(to_email: str, subject: str, html: str):
+    """
+    MAIL_SEND_MODE=sync  -> 요청 안에서 즉시 전송
+    MAIL_SEND_MODE=async -> 전역 실행자로 백그라운드 전송
+    """
+    mode = os.getenv("MAIL_SEND_MODE", "async").lower()
+    if mode == "sync":
+        return send_email(to_email, subject, html)
+
+    # async
+    try:
+        from utils.mail_async import submit
+        fut = submit(send_email, to_email, subject, html)
+
+        # 실패 로그 콜백(요청과 분리되어도 에러 확인 가능)
+        def _cb(f):
+            ok, err = f.result()
+            if not ok:
+                try:
+                    from flask import current_app as app
+                    app.logger.warning(f"[mail] async send fail: {err}")
+                except Exception:
+                    pass
+        fut.add_done_callback(_cb)
+        return True, None
+    except Exception as e:
+        return False, f"async submit failed: {e}"
 
 '''def send_email(to_email: str, subject: str, html: str):
     if not to_email:
