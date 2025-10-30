@@ -247,16 +247,24 @@ def send_letter():
               "saved": to_type in ['self', 'volunteer'], "created_at": datetime.now()}
     db.letter.insert_one(letter)
 
+    app.logger.info(
+        f"[mail] precheck to_type={to_type!r} "
+        f"receiver={receiver!r} type(receiver)={type(receiver)} "
+        f"orig_sender={orig.get('from') if 'orig' in locals() else None} "
+        f"type(orig_sender)={type(orig.get('from')) if 'orig' in locals() else None}"
+)
+
     # 🔔 랜덤 수신 메일 알림 (random일 때만)
-    if to_type == "random" and receiver:
+    if to_type == 'random' and receiver:   # ObjectId 검사 빼기
         try:
             app.logger.info(f"[mail] random_notify TRY user_id={receiver} lid={letter['_id']}")
-            ok, err = notify_random_received(str(receiver), str(letter["_id"]), debug_mail=MAIL_DEBUG)
+            ok, err = notify_random_received(str(receiver), str(letter['_id']), debug_mail=MAIL_DEBUG)
             app.logger.info(f"[mail] random_notify RESULT ok={ok} err={err}")
             if not ok:
                 app.logger.error(f"[mail] random_notify FAIL: {err}")
         except Exception as e:
             app.logger.exception(f"[mail] random_notify EXC: {e}")
+
 
     #######유저 테스트용 - 실제 배포 시에는 삭제
     """if to_type == 'random':
@@ -529,7 +537,7 @@ def reply_letter():
     db.letter.update_one({'_id': lid}, {'$set': {'status': 'replied', 'replied_at': datetime.now()}})
 
     # 🔔 답장 도착 메일 알림 (원 발신자에게)
-    orig_sender = orig.get("from")
+    orig_sender = orig.get('from') if 'orig' in locals() else None
     if orig_sender:
         try:
             uid = str(orig_sender)
