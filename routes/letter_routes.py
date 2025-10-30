@@ -248,15 +248,15 @@ def send_letter():
     db.letter.insert_one(letter)
 
     # 🔔 랜덤 수신 메일 알림 (random일 때만)
-    if to_type == 'random' and isinstance(receiver, ObjectId):
+    if to_type == "random" and receiver:
         try:
             app.logger.info(f"[mail] random_notify TRY user_id={receiver} lid={letter['_id']}")
-            ok, err = notify_random_received(str(receiver), str(letter['_id']), debug_mail=MAIL_DEBUG)
+            ok, err = notify_random_received(str(receiver), str(letter["_id"]), debug_mail=MAIL_DEBUG)
             app.logger.info(f"[mail] random_notify RESULT ok={ok} err={err}")
             if not ok:
                 app.logger.error(f"[mail] random_notify FAIL: {err}")
         except Exception as e:
-            app.logger.exception(f"[mail] random_notify EXC: {e}")    
+            app.logger.exception(f"[mail] random_notify EXC: {e}")
 
     #######유저 테스트용 - 실제 배포 시에는 삭제
     """if to_type == 'random':
@@ -529,17 +529,17 @@ def reply_letter():
     db.letter.update_one({'_id': lid}, {'$set': {'status': 'replied', 'replied_at': datetime.now()}})
 
     # 🔔 답장 도착 메일 알림 (원 발신자에게)
-    orig_sender = orig.get('from')  # ObjectId or str
-    try:
-        if orig_sender:
-            uid = str(orig_sender) if isinstance(orig_sender, ObjectId) else str(ObjectId(orig_sender))
+    orig_sender = orig.get("from")
+    if orig_sender:
+        try:
+            uid = str(orig_sender)
             app.logger.info(f"[mail] reply_notify TRY user_id={uid} lid={lid}")
             ok, err = notify_reply_received(uid, str(lid), debug_mail=MAIL_DEBUG)
             app.logger.info(f"[mail] reply_notify RESULT ok={ok} err={err}")
             if not ok:
                 app.logger.error(f"[mail] reply_notify FAIL: {err}")
-    except Exception as e:
-        app.logger.exception(f"[mail] reply_notify EXC: {e}")
+        except Exception as e:
+            app.logger.exception(f"[mail] reply_notify EXC: {e}")
 
 
 @letter_routes.route('/replied-to-me', methods=['GET'])
