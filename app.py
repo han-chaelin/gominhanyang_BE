@@ -189,10 +189,6 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=debug_mode)
 
 
-from utils.config import masked_env_snapshot
-app.logger.info(f"[mail] env: {masked_env_snapshot()}")
-
-
 
 '''
 import os
