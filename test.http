@@ -1,7 +1,7 @@
 # @host = http://127.0.0.1:5000
 @host = https://dev-server-4t3n.onrender.com
 
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhmMzU0NzA1YjFiZGFlYzJlMjg0MWVhIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjA4NjY5NTN9.ZIooJC6LIBE8n34tCL5IZjQ4suKPE7lybTIilwv9bso
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjhmMzU0NzA1YjFiZGFlYzJlMjg0MWVhIiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjE5MjE4Mjd9.OQUHONnr-xv6vIe8tngQNrvY1Otaq5vi6NVE6IBU9ME
 
 ### 🔐 회원가입
 POST {{host}}/api/users/signup
@@ -176,19 +176,6 @@ Authorization: {{token}}
   "rating": 5,
   "reason": "너무 신기해요."
 }
-
-### 만족도 저장 테스트
-POST http://localhost:5000/satisfaction/
-Content-Type: application/json
-Authorization: Bearer {{your_token_here}}
-
-{
-  "letter_id": "6846b8c1d1dfc444dd7b0690", 
-  "rating": 5,
-  "reason": "너무 따뜻한 답장이었어요."
-}
-
-
 
 #################### 아이템 기능 ####################
 

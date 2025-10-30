@@ -267,8 +267,13 @@ def send_letter():
         db.letter.update_one({'_id': letter['_id']}, {'$set': {'status': 'replied', 'replied_at': datetime.now()}})
         """
     
-    return json_kor({"message": "편지 전송 완료", "letter_id": letter['_id'],
-                     "to": get_nickname(receiver), "title": title, "emotion": emotion}, 201)
+    return json_kor({
+        "message": "편지 전송 완료", 
+        "letter_id": letter['_id'],
+        "to": get_nickname(receiver), 
+        "title": title, 
+        "emotion": emotion,
+    }, 201)
 
 @letter_routes.route('/random', methods=['GET'])
 @token_required
@@ -287,7 +292,6 @@ def get_my_unread_letters():
     for letter in letters:
           letter['from_nickname'] = get_nickname(letter['from'])
     return json_kor({"unread_letters": letters}, 200)
-
 
 
 @letter_routes.route('/<letter_id>', methods=['GET'])
@@ -515,7 +519,7 @@ def reply_letter():
         return json_kor({'error': '답장은 최대 1000자까지 작성할 수 있습니다.'}, 400)
     
     # 200자 초과 포인트 지급
-    if len(text) > 100:
+    if len(text) > 200:
         grant_point_by_action(ObjectId(request.user_id), "long_letter_bonus")
 
     orig = db.letter.find_one({'_id': lid})

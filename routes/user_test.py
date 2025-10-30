@@ -7,6 +7,7 @@ from functools import wraps
 import json
 from utils.db import db
 from utils.config import JWT_SECRET_KEY, JWT_ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from utils.attendance import mark_attendance_login, attended_today
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -211,6 +212,12 @@ def login():
             return json_kor({"error": "비밀번호가 올바르지 않습니다."}, 401)
 
         token = create_token(user_doc)
+
+        # ✅ 로그인 기준 출석 체크
+        try:
+            mark_attendance_login(user["_id"])
+        except Exception as e:
+            current_app.logger.warning(f"[attendance] login mark fail: {e}")
          
         #####더미용 데이터#####
         """letter = {"_id": ObjectId(), "from": ObjectId('68260f67f02ef2dccfdeffca'), "to": user_id, "title": '익명의 사용자에게서 온 편지',"emotion": '슬픔', "content": '정말 친하다고 생각했던 친구와 크게 싸웠어요. 좋은 친구라고 생각했는데 아니였던 것 같아요 우정이 영원할 수는 없는 걸까요?', "status": 'sent',
@@ -222,7 +229,8 @@ def login():
             "message": "로그인 성공!",
             "nickname": user_doc["nickname"],
             "limited_access": user_doc.get("limited_access", False),
-            "token": token
+            "token": token,
+            "attended_today": attended_today(str(user["_id"]))
         })
         
     except Exception as e:
