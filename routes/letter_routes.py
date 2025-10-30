@@ -1,4 +1,5 @@
 from flask import Blueprint, request, Response
+from flask import current_app as app
 from utils.db import db
 from utils.auth import token_required
 from routes.reward_routes import grant_point_by_action
@@ -248,16 +249,9 @@ def send_letter():
 
     # 🔔 랜덤 수신 메일 알림 (random일 때만)
     if to_type == 'random' and isinstance(receiver, ObjectId):
-        from flask import current_app as app
         ok, err = notify_random_received(str(receiver), str(letter['_id']))
         if not ok:
             app.logger.warning(f"[mail] random_received fail: {err}")
-
-    '''
-    if to_type == 'random' and isinstance(receiver, ObjectId):
-        # 비동기로 전송 (요청 지연 방지)
-        fire_and_forget(notify_random_received, str(receiver), str(letter['_id']))
-    '''
     
     #######유저 테스트용 - 실제 배포 시에는 삭제
     """if to_type == 'random':
@@ -530,9 +524,16 @@ def reply_letter():
     db.letter.update_one({'_id': lid}, {'$set': {'status': 'replied', 'replied_at': datetime.now()}})
 
     # 🔔 답장 도착 메일 알림 (원 발신자에게)
-    orig_sender = orig.get('from')  # ObjectId
-    if isinstance(orig_sender, ObjectId):
-        fire_and_forget(notify_reply_received, str(orig_sender), str(lid))
+    orig_sender = orig.get('from')  # ObjectId 또는 str 가능
+    # ObjectId/str 둘 다 수용
+    try:
+        if orig_sender:
+            uid = str(orig_sender) if isinstance(orig_sender, ObjectId) else str(ObjectId(orig_sender))
+            ok, err = notify_reply_received(uid, str(lid))  # 동기 호출
+            if not ok:
+                app.logger.warning(f"[mail] reply_received fail: {err}")
+    except Exception as e:
+        app.logger.exception(f"[mail] reply_received exception: {e}")
 
     return json_kor({'message': '답장 완료'}, 200)
 
