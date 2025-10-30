@@ -1,6 +1,7 @@
 from flask import Blueprint, request, Response
 from flask import current_app as app
 from utils.db import db
+from utils.config import MAIL_DEBUG
 from utils.auth import token_required
 from routes.reward_routes import grant_point_by_action
 from utils.notify import notify_random_received, notify_reply_received
