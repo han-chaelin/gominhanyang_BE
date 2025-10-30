@@ -51,7 +51,7 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
 APP_BASE_URL = os.getenv("APP_BASE_URL", "https://gominhanyang.vercel.app")
 
 
-MAIL_DEBUG = os.getenv("MAIL_DEBUG", "false").lower() == "true"
+MAIL_DEBUG = str(os.getenv("MAIL_DEBUG", "false")).lower() == "true"
 def masked_env_snapshot():
     def hide(v):
       if not v: return v
