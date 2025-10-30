@@ -1,4 +1,4 @@
-import smtplib, os
+import smtplib, ssl, socket
 from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import formataddr, parseaddr
@@ -30,7 +30,10 @@ def _format_to_header(to_email: str) -> str:
         return ""
     return formataddr((str(Header(name, "utf-8")), addr)) if name else addr
 
-def send_email(to_email: str, subject: str, html: str):
+def _bool(v):
+    return v if isinstance(v, bool) else str(v).lower() == "true"
+
+def send_email(to_email: str, subject: str, html: str, *, debug: bool=False, retries: int=2):
     if not to_email:
         return False, "no recipient"
     if not SMTP_HOST:
@@ -43,95 +46,62 @@ def send_email(to_email: str, subject: str, html: str):
     msg["From"] = _format_from_header(EMAIL_FROM or SMTP_USER or "")
     msg["To"] = _format_to_header(to_email)
 
-    # 문자열/불린 혼용을 한 번만 정규화
-    use_tls = EMAIL_USE_TLS if isinstance(EMAIL_USE_TLS, bool) else str(EMAIL_USE_TLS).lower() == "true"
+    use_tls = _bool(EMAIL_USE_TLS)
+    port = int(SMTP_PORT)
+    envelope_from = (SMTP_USER or parseaddr(msg["From"])[1] or "").strip()
+    to_addr = (parseaddr(to_email)[1] or to_email).strip()
 
-    try:
-        # 465면 SSL, 587이면 STARTTLS
-        if str(SMTP_PORT) == "465":
-            smtp = smtplib.SMTP_SSL(SMTP_HOST, int(SMTP_PORT), timeout=10)
-            smtp.ehlo()
-        else:
-            smtp = smtplib.SMTP(SMTP_HOST, int(SMTP_PORT), timeout=10)
-            smtp.ehlo()         
-            if use_tls:
-                smtp.starttls()
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            if str(port) == "465":
+                context = ssl.create_default_context()
+                smtp = smtplib.SMTP_SSL(SMTP_HOST, port, timeout=10, context=context)
+                smtp.ehlo()
+            else:
+                smtp = smtplib.SMTP(SMTP_HOST, port, timeout=10)
+                if debug:
+                    smtp.set_debuglevel(1)
+                smtp.ehlo()
+                if use_tls:
+                    context = ssl.create_default_context()
+                    smtp.starttls(context=context)
+                    smtp.ehlo()
+
+            if SMTP_USER and SMTP_PASSWORD:
+                smtp.login(SMTP_USER, SMTP_PASSWORD)
+
+            # 연결 살아있는지 체크
+            try:
+                smtp.noop()
+            except Exception:
                 smtp.ehlo()
 
-        if SMTP_USER and SMTP_PASSWORD:
-            smtp.login(SMTP_USER, SMTP_PASSWORD)
-
-        # Envelope From 은 주소만 사용해야 함 (헤더의 표시명/인코딩 제거)
-        envelope_from = parseaddr(msg["From"])[1] or (SMTP_USER or "")
-
-        # 연결이 정말 되었는지 간단 체크 (sock 유무)
-        if getattr(smtp, "sock", None) is None:
-            try:
-                smtp.connect(SMTP_HOST, int(SMTP_PORT))
-                if use_tls and str(SMTP_PORT) != "465":
-                    smtp.starttls(); smtp.ehlo()
-            except Exception as e:
-                smtp.quit()
-                return False, f"connect() failed: {e}"
-
-        # 여기서 envelope_from 적용
-        smtp.sendmail(envelope_from, [parseaddr(to_email)[1] or to_email], msg.as_string())
-        smtp.quit()
-        return True, None
-    except Exception as e:
-        try:
+            smtp.sendmail(envelope_from, [to_addr], msg.as_string())
             smtp.quit()
-        except:
-            pass
-        return False, str(e)
-    
-def send_email_entry(to_email: str, subject: str, html: str):
-    """
-    MAIL_SEND_MODE=sync  -> 요청 안에서 즉시 전송
-    MAIL_SEND_MODE=async -> 전역 실행자로 백그라운드 전송
-    """
-    mode = os.getenv("MAIL_SEND_MODE", "async").lower()
-    if mode == "sync":
-        return send_email(to_email, subject, html)
+            return True, None
 
-    # async
-    try:
-        from utils.mail_async import submit
-        fut = submit(send_email, to_email, subject, html)
+        except (smtplib.SMTPServerDisconnected, smtplib.SMTPDataError,
+                smtplib.SMTPConnectError, socket.timeout, OSError) as e:
+            last_err = e
+            try:
+                smtp.quit()
+            except Exception:
+                pass
+            # 일시 오류 재시도 (작게 backoff)
+            if attempt < retries:
+                continue
+            return False, f"{type(e).__name__}: {e}"
 
-        # 실패 로그 콜백(요청과 분리되어도 에러 확인 가능)
-        def _cb(f):
-            ok, err = f.result()
-            if not ok:
-                try:
-                    from flask import current_app as app
-                    app.logger.warning(f"[mail] async send fail: {err}")
-                except Exception:
-                    pass
-        fut.add_done_callback(_cb)
-        return True, None
-    except Exception as e:
-        return False, f"async submit failed: {e}"
+        except Exception as e:
+            last_err = e
+            try:
+                smtp.quit()
+            except Exception:
+                pass
+            return False, f"{type(e).__name__}: {e}"
 
-'''def send_email(to_email: str, subject: str, html: str):
-    if not to_email:
-        return False, "no recipient"
-    msg = MIMEText(html, "html", "utf-8")
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_FROM
-    msg["To"] = to_email
-    try:
-        smtp = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
-        if EMAIL_USE_TLS:
-            smtp.starttls()
-        if SMTP_USER and SMTP_PASSWORD:
-            smtp.login(SMTP_USER, SMTP_PASSWORD)
-        smtp.sendmail(EMAIL_FROM, [to_email], msg.as_string())
-        smtp.quit()
-        return True, None
-    except Exception as e:
-        return False, str(e)
-'''
+    return False, str(last_err) if last_err else "unknown error"
 
 # 메일 템플릿 함수
 def tpl_reply_received(nickname: str, letter_title: str, app_url: str):
