@@ -9,7 +9,7 @@ def notify_reply_received(user_id: str, letter_id: str, debug_mail: bool = MAIL_
         return False, "recipient not found or missing email"
 
     html = tpl_reply_received(user.get("nickname", ""), "(제목)", APP_BASE_URL)
-    ok, err = send_email(user["email"], "보낸 편지에 답장이 도착했어요", html, debug=debug_mail)
+    ok, err = send_email(user["email"], "보낸 편지에 답장이 도착했어요", html)
     return ok, err
     '''
     try:
@@ -32,7 +32,7 @@ def notify_random_received(user_id: str, letter_id: str, debug_mail: bool = MAIL
         return False, "recipient not found or missing email"
 
     html = tpl_random_received(user.get("nickname", ""), "(제목)", APP_BASE_URL)
-    ok, err = send_email(user["email"], "새 편지가 도착했어요 ✉️", html, debug=debug_mail)
+    ok, err = send_email(user["email"], "새 편지가 도착했어요 ✉️", html)
     return ok, err
     '''
     try:

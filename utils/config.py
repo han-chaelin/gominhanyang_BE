@@ -52,16 +52,3 @@ APP_BASE_URL = os.getenv("APP_BASE_URL", "https://gominhanyang.vercel.app")
 
 
 MAIL_DEBUG = str(os.getenv("MAIL_DEBUG", "false")).lower() == "true"
-def masked_env_snapshot():
-    def hide(v):
-      if not v: return v
-      if len(v) <= 4: return "***"
-      return v[:2] + "***" + v[-2:]
-    return {
-      "SMTP_HOST": os.getenv("SMTP_HOST"),
-      "SMTP_PORT": os.getenv("SMTP_PORT"),
-      "SMTP_USER": hide(os.getenv("SMTP_USER")),
-      "SMTP_PASSWORD(len)": len(os.getenv("SMTP_PASSWORD","")),
-      "EMAIL_FROM": os.getenv("EMAIL_FROM"),
-      "EMAIL_USE_TLS": os.getenv("EMAIL_USE_TLS"),
-    }
