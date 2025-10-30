@@ -261,9 +261,7 @@ def send_letter():
     db.letter.insert_one(letter)
 
     # 🔔 랜덤 수신자에게 이메일 알림
-    if to_type == 'random' and receiver:
-        notify_random_received(str(receiver), str(letter["_id"]), debug_mail=MAIL_DEBUG)
-        
+    if to_type == 'random' and receiver:      
         ok, err = notify_random_received(str(receiver), str(letter["_id"]), debug_mail=MAIL_DEBUG)
         if not ok:
             app.logger.warning(f"[mail] notify_random_received fail: {err}")

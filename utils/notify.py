@@ -11,20 +11,6 @@ def notify_reply_received(user_id: str, letter_id: str, debug_mail: bool = MAIL_
     html = tpl_reply_received(user.get("nickname", ""), "(제목)", APP_BASE_URL)
     ok, err = send_email(user["email"], "보낸 편지에 답장이 도착했어요", html)
     return ok, err
-    '''
-    try:
-        user = db.user.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
-        if not user:
-            return False, f"recipient not found: {user_id}"
-        if not user.get("email"):
-            return False, f"recipient email missing: {user_id}"
-        html = tpl_reply_received(user.get("nickname", ""), "(제목)", APP_BASE_URL)
-        return send_email(user["email"], "보낸 편지에 답장이 도착했어요", html, debug=debug_mail)
-    except Exception as e:
-        from flask import current_app as app
-        app.logger.exception(f"[mail] notify_reply_received EXC: {e}")
-        return False, str(e)
-    '''
         
 def notify_random_received(user_id: str, letter_id: str, debug_mail: bool = MAIL_DEBUG):
     user = db.user.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
@@ -34,20 +20,6 @@ def notify_random_received(user_id: str, letter_id: str, debug_mail: bool = MAIL
     html = tpl_random_received(user.get("nickname", ""), "(제목)", APP_BASE_URL)
     ok, err = send_email(user["email"], "새 편지가 도착했어요 ✉️", html)
     return ok, err
-    '''
-    try:
-        user = db.user.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
-        if not user:
-            return False, f"recipient not found: {user_id}"
-        if not user.get("email"):
-            return False, f"recipient email missing: {user_id}"
-        html = tpl_random_received(user.get("nickname", ""), "(제목)", APP_BASE_URL)
-        return send_email(user["email"], "새 편지가 도착했어요 ✉️", html, debug=debug_mail)
-    except Exception as e:
-        from flask import current_app as app
-        app.logger.exception(f"[mail] notify_random_received EXC: {e}")
-        return False, str(e)
-    '''
 
 '''
 from bson import ObjectId
