@@ -215,7 +215,7 @@ def login():
 
         # ✅ 로그인 기준 출석 체크
         try:
-            mark_attendance_login(user["_id"])
+            mark_attendance_login(user_doc["_id"])
         except Exception as e:
             current_app.logger.warning(f"[attendance] login mark fail: {e}")
          
@@ -230,7 +230,7 @@ def login():
             "nickname": user_doc["nickname"],
             "limited_access": user_doc.get("limited_access", False),
             "token": token,
-            "attended_today": attended_today(str(user["_id"]))
+            "attended_today": attended_today(str(user_doc["_id"]))
         })
         
     except Exception as e:
