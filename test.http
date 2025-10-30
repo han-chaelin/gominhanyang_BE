@@ -1,7 +1,7 @@
 # @host = http://127.0.0.1:5000
 @host = https://dev-server-4t3n.onrender.com
 
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjkwM2I2NWMyZGMyZTQyYzQ0ODg0NGU4Iiwibmlja25hbWUiOiJcdWNjNDRcdWI5YjAiLCJleHAiOjE3NjE5Mzg2MDd9.7myJL5s7r-gRLOztV9CCV3nlB_jmTOVKLNTcQrGNkDM
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjkwMzhlZDBiNzY4OWJkNjM4YjY4OGU2Iiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjE5NDA0NDB9.PeT47Am2riLEncq9Wa7bOXfhCbcheDwgzyQ2iMxOfNY
 
 ### 🔐 회원가입
 POST {{host}}/api/users/signup
@@ -23,8 +23,8 @@ POST {{host}}/api/users/login
 Content-Type: application/json
 
 {
-  "nickname": "채린",
-  "password": "20021110"
+  "nickname": "master",
+  "password": "00000000"
 }
 
 ### 사용자 정보 조회

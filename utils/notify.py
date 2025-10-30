@@ -5,7 +5,7 @@ from utils.config import APP_BASE_URL, MAIL_DEBUG  # 기본 디버그 플래그
 
 def notify_reply_received(user_id: str, letter_id: str, debug_mail: bool = MAIL_DEBUG):
     try:
-        user = db.users.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
+        user = db.user.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
         if not user:
             return False, f"recipient not found: {user_id}"
         if not user.get("email"):
@@ -19,7 +19,7 @@ def notify_reply_received(user_id: str, letter_id: str, debug_mail: bool = MAIL_
 
 def notify_random_received(user_id: str, letter_id: str, debug_mail: bool = MAIL_DEBUG):
     try:
-        user = db.users.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
+        user = db.user.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
         if not user:
             return False, f"recipient not found: {user_id}"
         if not user.get("email"):
