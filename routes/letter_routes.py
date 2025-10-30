@@ -243,20 +243,27 @@ def send_letter():
         receiver = random.choice(candidates)
     else:
         return json_kor({"error": "유효하지 않은 수신 타입"}, 400)
+    
     title = generate_title_with_gpt(content)
-    letter = {"_id": ObjectId(), "from": sender, "to": receiver, "title": title,"emotion": emotion, "content": content, "status": 'sent',
-              "saved": to_type in ['self', 'volunteer'], "created_at": datetime.now()}
+    letter = {
+        "_id": ObjectId(), 
+        "from": sender, 
+        "to": receiver, 
+        "title": title,
+        "emotion": emotion, 
+        "content": content, 
+        "status": 'sent',
+        "saved": to_type in ['self', 'volunteer'], 
+        "created_at": datetime.now()}
     db.letter.insert_one(letter)
 
+    # 메일 알림 (랜덤 수신) : 조건 완화 + 예외 안전 + 상세 로그
     app.logger.info(
-        f"[mail] precheck to_type={to_type!r} "
-        f"receiver={receiver!r} type(receiver)={type(receiver)} "
-        f"orig_sender={orig.get('from') if 'orig' in locals() else None} "
-        f"type(orig_sender)={type(orig.get('from')) if 'orig' in locals() else None}"
-)
+        f"[mail] precheck to_type={to_type!r} receiver={receiver!r} type(receiver)={type(receiver)}"
+    )
 
     # 🔔 랜덤 수신 메일 알림 (random일 때만)
-    if to_type == 'random' and receiver:   # ObjectId 검사 빼기
+    if to_type == 'random' and receiver:
         try:
             app.logger.info(f"[mail] random_notify TRY user_id={receiver} lid={letter['_id']}")
             ok, err = notify_random_received(str(receiver), str(letter['_id']), debug_mail=MAIL_DEBUG)
@@ -267,17 +274,18 @@ def send_letter():
             app.logger.exception(f"[mail] random_notify EXC: {e}")
 
 
-    #######유저 테스트용 - 실제 배포 시에는 삭제
-    """if to_type == 'random':
+    ### 유저 테스트용 - 실제 배포 시에는 삭제 ####
+    """
+    if to_type == 'random':
         text = generate_ai_replies_with_gpt(content,'ai')
         comment = {'_id': ObjectId(), 'from': ObjectId('68260f67f02ef2dccfdeffc9'),'to': sender, 'content': text, 'read': False,'created_at': datetime.now(), 'original_letter_id': letter['_id']}
         db.comment.insert_one(comment)
         db.letter.update_one({'_id': letter['_id']}, {'$set': {'status': 'replied', 'replied_at': datetime.now()}})
-        """
+    """
     
     return json_kor({
         "message": "편지 전송 완료", 
-        "letter_id": letter['_id'],
+        "letter_id": str(letter['_id']),
         "to": get_nickname(receiver), 
         "title": title, 
         "emotion": emotion,
