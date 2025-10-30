@@ -1,9 +1,17 @@
 from bson import ObjectId
 from utils.db import db
 from utils.mailer import send_email, tpl_reply_received, tpl_random_received
-from utils.config import APP_BASE_URL, MAIL_DEBUG  # 기본 디버그 플래그
+from utils.config import APP_BASE_URL, MAIL_DEBUG
 
 def notify_reply_received(user_id: str, letter_id: str, debug_mail: bool = MAIL_DEBUG):
+    user = db.user.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
+    if not user or not user.get("email"):
+        return False, "recipient not found or missing email"
+
+    html = tpl_reply_received(user.get("nickname", ""), "(제목)", APP_BASE_URL)
+    ok, err = send_email(user["email"], "보낸 편지에 답장이 도착했어요", html, debug=debug_mail)
+    return ok, err
+    '''
     try:
         user = db.user.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
         if not user:
@@ -16,8 +24,17 @@ def notify_reply_received(user_id: str, letter_id: str, debug_mail: bool = MAIL_
         from flask import current_app as app
         app.logger.exception(f"[mail] notify_reply_received EXC: {e}")
         return False, str(e)
-
+    '''
+        
 def notify_random_received(user_id: str, letter_id: str, debug_mail: bool = MAIL_DEBUG):
+    user = db.user.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
+    if not user or not user.get("email"):
+        return False, "recipient not found or missing email"
+
+    html = tpl_random_received(user.get("nickname", ""), "(제목)", APP_BASE_URL)
+    ok, err = send_email(user["email"], "새 편지가 도착했어요 ✉️", html, debug=debug_mail)
+    return ok, err
+    '''
     try:
         user = db.user.find_one({"_id": ObjectId(user_id)}, {"email": 1, "nickname": 1})
         if not user:
@@ -30,7 +47,7 @@ def notify_random_received(user_id: str, letter_id: str, debug_mail: bool = MAIL
         from flask import current_app as app
         app.logger.exception(f"[mail] notify_random_received EXC: {e}")
         return False, str(e)
-
+    '''
 
 '''
 from bson import ObjectId

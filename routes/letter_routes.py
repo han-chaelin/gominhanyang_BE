@@ -225,6 +225,8 @@ def send_letter():
     to_type = data.get("to")
     content = data.get("content")
     emotion = data.get("emotion")
+
+    # 필수값 확인
     if not (to_type and content and emotion):
         return json_kor({"error": "필수 정보 누락"}, 400)
     
@@ -235,7 +237,6 @@ def send_letter():
     elif to_type == 'volunteer':
         receiver = 'volunteer'
     elif to_type == 'random':
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         users = db.user.distinct('_id')
         candidates = [u for u in users if u != sender]
         if not candidates:
@@ -244,6 +245,7 @@ def send_letter():
     else:
         return json_kor({"error": "유효하지 않은 수신 타입"}, 400)
     
+    # 편지 데이터 생성
     title = generate_title_with_gpt(content)
     letter = {
         "_id": ObjectId(), 
@@ -254,16 +256,19 @@ def send_letter():
         "content": content, 
         "status": 'sent',
         "saved": to_type in ['self', 'volunteer'], 
-        "created_at": datetime.now()}
+        "created_at": datetime.now()
+    }
     db.letter.insert_one(letter)
 
-    # 메일 알림 (랜덤 수신) : 조건 완화 + 예외 안전 + 상세 로그
-    app.logger.info(
-        f"[mail] precheck to_type={to_type!r} receiver={receiver!r} type(receiver)={type(receiver)}"
-    )
-
-    # 🔔 랜덤 수신 메일 알림 (random일 때만)
+    # 🔔 랜덤 수신자에게 이메일 알림
     if to_type == 'random' and receiver:
+        notify_random_received(str(receiver), str(letter["_id"]), debug_mail=MAIL_DEBUG)
+        
+        ok, err = notify_random_received(str(receiver), str(letter["_id"]), debug_mail=MAIL_DEBUG)
+        if not ok:
+            app.logger.warning(f"[mail] notify_random_received fail: {err}")
+
+        '''
         try:
             app.logger.info(f"[mail] random_notify TRY user_id={receiver} lid={letter['_id']}")
             ok, err = notify_random_received(str(receiver), str(letter['_id']), debug_mail=MAIL_DEBUG)
@@ -272,7 +277,7 @@ def send_letter():
                 app.logger.error(f"[mail] random_notify FAIL: {err}")
         except Exception as e:
             app.logger.exception(f"[mail] random_notify EXC: {e}")
-
+        '''
 
     ### 유저 테스트용 - 실제 배포 시에는 삭제 ####
     """
@@ -546,8 +551,13 @@ def reply_letter():
     db.letter.update_one({'_id': lid}, {'$set': {'status': 'replied', 'replied_at': datetime.now()}})
 
     # 🔔 답장 도착 메일 알림 (원 발신자에게)
-    orig_sender = orig.get('from') if 'orig' in locals() else None
+    orig_sender = orig.get('from')
     if orig_sender:
+        uid = str(orig_sender)
+        ok, err = notify_reply_received(uid, str(lid), debug_mail=MAIL_DEBUG)
+        if not ok:
+            app.logger.warning(f"[mail] reply_notify fail: {err}")
+        '''
         try:
             uid = str(orig_sender)
             app.logger.info(f"[mail] reply_notify TRY user_id={uid} lid={lid}")
@@ -557,7 +567,7 @@ def reply_letter():
                 app.logger.error(f"[mail] reply_notify FAIL: {err}")
         except Exception as e:
             app.logger.exception(f"[mail] reply_notify EXC: {e}")
-
+        '''
 
 @letter_routes.route('/replied-to-me', methods=['GET'])
 @token_required

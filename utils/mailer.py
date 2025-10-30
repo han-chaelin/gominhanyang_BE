@@ -33,7 +33,7 @@ def _format_to_header(to_email: str) -> str:
 def _bool(v):
     return v if isinstance(v, bool) else str(v).lower() == "true"
 
-def send_email(to_email: str, subject: str, html: str, *, debug: bool=False, retries: int=2):
+def send_email(to_email: str, subject: str, html: str):
     if not to_email:
         return False, "no recipient"
     if not SMTP_HOST:
@@ -46,62 +46,19 @@ def send_email(to_email: str, subject: str, html: str, *, debug: bool=False, ret
     msg["From"] = _format_from_header(EMAIL_FROM or SMTP_USER or "")
     msg["To"] = _format_to_header(to_email)
 
-    use_tls = _bool(EMAIL_USE_TLS)
-    port = int(SMTP_PORT)
-    envelope_from = (SMTP_USER or parseaddr(msg["From"])[1] or "").strip()
-    to_addr = (parseaddr(to_email)[1] or to_email).strip()
-
-    last_err = None
-    for attempt in range(retries + 1):
-        try:
-            if str(port) == "465":
-                context = ssl.create_default_context()
-                smtp = smtplib.SMTP_SSL(SMTP_HOST, port, timeout=10, context=context)
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_HOST, int(SMTP_PORT), timeout=10) as smtp:
+            smtp.ehlo()
+            if _bool(EMAIL_USE_TLS):
+                smtp.starttls(context=context)
                 smtp.ehlo()
-            else:
-                smtp = smtplib.SMTP(SMTP_HOST, port, timeout=10)
-                if debug:
-                    smtp.set_debuglevel(1)
-                smtp.ehlo()
-                if use_tls:
-                    context = ssl.create_default_context()
-                    smtp.starttls(context=context)
-                    smtp.ehlo()
-
             if SMTP_USER and SMTP_PASSWORD:
                 smtp.login(SMTP_USER, SMTP_PASSWORD)
-
-            # 연결 살아있는지 체크
-            try:
-                smtp.noop()
-            except Exception:
-                smtp.ehlo()
-
-            smtp.sendmail(envelope_from, [to_addr], msg.as_string())
-            smtp.quit()
-            return True, None
-
-        except (smtplib.SMTPServerDisconnected, smtplib.SMTPDataError,
-                smtplib.SMTPConnectError, socket.timeout, OSError) as e:
-            last_err = e
-            try:
-                smtp.quit()
-            except Exception:
-                pass
-            # 일시 오류 재시도 (작게 backoff)
-            if attempt < retries:
-                continue
-            return False, f"{type(e).__name__}: {e}"
-
-        except Exception as e:
-            last_err = e
-            try:
-                smtp.quit()
-            except Exception:
-                pass
-            return False, f"{type(e).__name__}: {e}"
-
-    return False, str(last_err) if last_err else "unknown error"
+            smtp.sendmail(SMTP_USER, [to_email], msg.as_string())
+        return True, None
+    except Exception as e:
+        return False, str(e)
 
 # 메일 템플릿 함수
 def tpl_reply_received(nickname: str, letter_title: str, app_url: str):

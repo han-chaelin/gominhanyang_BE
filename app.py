@@ -74,10 +74,6 @@ def create_app():
     # 요청 로깅 (before_request)
     # --------------------------
     @app.before_request
-    
-    def _log_req():
-        app.logger.info(f"[req] {request.method} {request.path} ua={request.headers.get('User-Agent','')[:40]}")
-
     def log_basic_info():
         # 요청 Body를 캐싱
         request._cached_data = request.get_data(as_text=True)
