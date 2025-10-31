@@ -1,5 +1,5 @@
-# @host = http://127.0.0.1:5000
-@host = https://dev-server-4t3n.onrender.com
+@host = http://127.0.0.1:5000
+# @host = https://dev-server-4t3n.onrender.com
 
 @token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjkwMzhlZDBiNzY4OWJkNjM4YjY4OGU2Iiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjE5NDA0NDB9.PeT47Am2riLEncq9Wa7bOXfhCbcheDwgzyQ2iMxOfNY
 

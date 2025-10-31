@@ -24,10 +24,8 @@ def mark_attendance_login(user_id: str | ObjectId, ts: datetime | None = None) -
                 "date": day,
                 "attended": True,
                 "first_action_at": now,
-                "counts": {"login": 0},
-                "actions": []
             },
-            "$set": {"last_action_at": now, "attended": True},
+            "$set": {"last_action_at": now},
             "$addToSet": {"actions": "login"},
             "$inc": {"counts.login": 1}
         },
