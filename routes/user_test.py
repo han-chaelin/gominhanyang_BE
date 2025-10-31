@@ -7,7 +7,7 @@ from functools import wraps
 import json
 from utils.db import db
 from utils.config import JWT_SECRET_KEY, JWT_ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
-from utils.attendance import mark_attendance_login, attended_today
+from utils.attendance import mark_attendance_login, attended_today, record_attendance
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -213,14 +213,8 @@ def login():
 
         token = create_token(user_doc)
 
-        # ✅ 1) 로그인 기준 출석 체크
-        try:
-            mark_attendance_login(user_doc["_id"])
-        except Exception as e:
-            current_app.logger.warning(f"[attendance] login mark fail: {e}")
-
-        # ✅ 2) 오늘 출석 여부 조회 (마킹 이후!)
-        today_done = attended_today(user_doc["_id"])
+        # 로그인 기반 출석 체크
+        today_done = record_attendance(user_doc["_id"])
        
 
         ##### 더미용 데이터 - 실제 배포 시에는 삭제 ####
