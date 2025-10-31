@@ -43,22 +43,25 @@ def _json(data, status=200):
     }
 })
 def today(current_user):
-    doc = get_today_attendance_doc(current_user["_id"])
-    if not doc:
-        return _json({"date": local_date_str(), "attended": False,
-                      "actions": [], "counts": {}, "first_action_at": None, "last_action_at": None}, 200)
-    return _json(doc, 200)
+    day = local_date_str()
+    doc = get_today_attendance_doc(current_user["_id"])  # {"days": {"<day>": {...}}}
 
+    if not doc or "days" not in doc or day not in doc["days"]:
+        return _json({
+            "date": day, "attended": False,
+            "actions": [], "counts": {},
+            "first_action_at": None, "last_action_at": None
+        }, 200)
 
-def _month_range_yyyy_mm(yyyy_mm: str):
-    y, m = map(int, yyyy_mm.split("-"))
-    start = KST.localize(datetime(y, m, 1))
-    if m == 12:
-        next_month = KST.localize(datetime(y+1, 1, 1))
-    else:
-        next_month = KST.localize(datetime(y, m+1, 1))
-    end = next_month - timedelta(days=1)
-    return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
+    block = doc["days"][day]
+    return _json({
+        "date": day,
+        "attended": block.get("attended", False),
+        "actions": block.get("actions", []),
+        "counts": block.get("counts", {}),
+        "first_action_at": block.get("first_action_at"),
+        "last_action_at": block.get("last_action_at")
+    }, 200)
 
 @attendance_routes.get("/calendar")
 @token_required
