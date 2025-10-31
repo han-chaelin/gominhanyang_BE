@@ -11,28 +11,30 @@ satisfaction_bp = Blueprint('satisfaction', __name__)
 @satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @swag_from({
-    'tags': ['Satisfaction'],
-    'description': '서비스에 대한 만족도를 평가하고 저장합니다.',
-    'parameters': [
-        {'name': 'Authorization', 'in': 'header', 'type': 'string', 'required': True, 'description': 'Bearer 토큰'},
-        {'name': 'body', 'in': 'body', 'required': True,
-         'schema': {
-             'type': 'object',
-             'properties': {
-                 'letter_id': {'type': 'string', 'example': '665f1234abcde9876543210f'},
-                 'rating': {'type': 'integer', 'example': 4},
-                 'reason': {'type': 'string', 'example': '공감이 잘 느껴졌어요.'}
-             },
-             'required': ['letter_id', 'rating', 'reason']
-         }}
-    ],
-    'responses': {
-        200: {'description': '만족도 저장 성공',
-              'schema': {'type': 'object', 'properties': {'message': {'type': 'string'}}}},
-        400: {'description': '입력 값 오류'},
-        404: {'description': '편지를 찾을 수 없음'},
-        409: {'description': '이미 제출됨'}
+  "tags": ["Satisfaction"],
+  "summary": "서비스 만족도 저장",
+  "description": "편지 전송 후, 본인이 작성한 편지에 대해 만족도를 1회 저장합니다.",
+  "parameters": [
+    {"name":"Authorization","in":"header","type":"string","required":True,"description":"Bearer 토큰"},
+    {"name":"body","in":"body","required":True,
+     "schema":{
+       "type":"object",
+       "properties":{
+         "letter_id":{"type":"string","example":"665f1234abcde9876543210f"},
+         "rating":{"type":"integer","example":4},
+         "reason":{"type":"string","example":"공감이 잘 느껴졌어요."}
+       },
+       "required":["letter_id","rating","reason"]
+     }
     }
+  ],
+  "responses":{
+    "200":{"description":"만족도 저장 성공"},
+    "400":{"description":"입력 값 오류 / 형식 오류"},
+    "403":{"description":"본인 편지가 아님"},
+    "404":{"description":"편지를 찾을 수 없음"},
+    "409":{"description":"이미 제출됨"}
+  }
 })
 def save_satisfaction():
     data = request.get_json()
