@@ -1,4 +1,4 @@
-from flask import Blueprint, request, Response
+from flask import Blueprint, request, Response, current_app
 from flasgger import swag_from
 from datetime import datetime, timedelta
 from bson import ObjectId
@@ -43,25 +43,31 @@ def _json(data, status=200):
     }
 })
 def today(current_user):
-    day = local_date_str()
-    doc = get_today_attendance_doc(current_user["_id"])  # {"days": {"<day>": {...}}}
+    try:
+        uid = ObjectId(getattr(request, "user_id"))
+        day = local_date_str()
 
-    if not doc or "days" not in doc or day not in doc["days"]:
+        doc = db.attendance.find_one({"user_id": uid}, {f"days.{day}": 1, "_id": 0}) or {}
+        block = (doc.get("days") or {}).get(day)
+
+        if not block:
+            return _json({
+                "date": day, "attended": False,
+                "actions": [], "counts": {},
+                "first_action_at": None, "last_action_at": None
+            }, 200)
+
         return _json({
-            "date": day, "attended": False,
-            "actions": [], "counts": {},
-            "first_action_at": None, "last_action_at": None
+            "date": day,
+            "attended": bool(block.get("attended")),
+            "actions": block.get("actions", []),
+            "counts": block.get("counts", {}),
+            "first_action_at": block.get("first_action_at"),
+            "last_action_at": block.get("last_action_at")
         }, 200)
-
-    block = doc["days"][day]
-    return _json({
-        "date": day,
-        "attended": block.get("attended", False),
-        "actions": block.get("actions", []),
-        "counts": block.get("counts", {}),
-        "first_action_at": block.get("first_action_at"),
-        "last_action_at": block.get("last_action_at")
-    }, 200)
+    except Exception as e:
+        current_app.logger.exception(e)
+        return _json({"error": f"[attendance/today] {e}"}, 500)
 
 @attendance_routes.get("/calendar")
 @token_required
@@ -98,46 +104,45 @@ def today(current_user):
         500: {"description": "Server Error"}
     }
 })
-def calendar_me(current_user):
-    month = request.args.get("month")  # "YYYY-MM"
-    start = request.args.get("start")
-    end = request.args.get("end")
-    uid = current_user["_id"]
+def calendar_me():
+    try:
+        month = (request.args.get("month") or "").strip()
+        start = (request.args.get("start") or "").strip()
+        end   = (request.args.get("end") or "").strip()
 
-    # 범위 계산
-    if month:
-        from datetime import datetime, timedelta
-        y, m = map(int, month.split("-"))
-        start_dt = KST.localize(datetime(y, m, 1))
-        if m == 12: next_dt = KST.localize(datetime(y+1, 1, 1))
-        else:       next_dt = KST.localize(datetime(y, m+1, 1))
-        start = start_dt.strftime("%Y-%m-%d")
-        end   = (next_dt - timedelta(days=1)).strftime("%Y-%m-%d")
-    elif not (start and end):
-        return _json({"error": "month 또는 start/end를 지정하세요."}, 400)
+        if month:
+            y, m = map(int, month.split("-"))
+            start_dt = KST.localize(datetime(y, m, 1))
+            next_dt  = KST.localize(datetime(y+1, 1, 1)) if m == 12 else KST.localize(datetime(y, m+1, 1))
+            start, end = start_dt.strftime("%Y-%m-%d"), (next_dt - timedelta(days=1)).strftime("%Y-%m-%d")
+        elif not (start and end):
+            return _json({"error": "month 또는 start/end를 지정하세요."}, 400)
 
-    # 유저 1문서에서 days와 days_index만 가져오기
-    doc = db.attendance.find_one(
-        {"user_id": uid},
-        {"days": 1, "days_index": 1, "_id": 0}
-    ) or {}
+        uid = ObjectId(getattr(request, "user_id"))
 
-    days = doc.get("days", {})
-    # 월 전체 날짜 배열 생성
-    dt_start = datetime.strptime(start, "%Y-%m-%d")
-    dt_end   = datetime.strptime(end, "%Y-%m-%d")
-    n = (dt_end - dt_start).days + 1
-    dates = [(dt_start + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(n)]
+        doc = db.attendance.find_one({"user_id": uid}, {"days": 1, "_id": 0}) or {}
+        days_obj = doc.get("days") or {}
 
-    attended = []
-    detail = {}
-    for d in dates:
-        if d in days and days[d].get("attended"):
-            attended.append(d)
-            detail[d] = {
-                "actions": days[d].get("actions", []),
-                "first_action_at": days[d].get("first_action_at"),
-                "last_action_at": days[d].get("last_action_at"),
-            }
+        dt_start = datetime.strptime(start, "%Y-%m-%d")
+        dt_end   = datetime.strptime(end,   "%Y-%m-%d")
+        if dt_end < dt_start:
+            return _json({"error": "end가 start보다 앞설 수 없습니다."}, 400)
 
-    return _json({"dates": dates, "attended": attended, "detail": detail}, 200)
+        n = (dt_end - dt_start).days + 1
+        dates = [(dt_start + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(n)]
+
+        attended, detail = [], {}
+        for d in dates:
+            blk = days_obj.get(d)
+            if blk and blk.get("attended"):
+                attended.append(d)
+                detail[d] = {
+                    "actions": blk.get("actions", []),
+                    "first_action_at": blk.get("first_action_at"),
+                    "last_action_at": blk.get("last_action_at"),
+                }
+
+        return _json({"dates": dates, "attended": attended, "detail": detail}, 200)
+    except Exception as e:
+        current_app.logger.exception(e)
+        return _json({"error": f"[attendance/calendar] {e}"}, 500)
