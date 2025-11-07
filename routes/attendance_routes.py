@@ -42,9 +42,9 @@ def _json(data, status=200):
         500: {"description": "Server Error"}
     }
 })
-def today(current_user):
+def today():
     try:
-        uid = ObjectId(getattr(request, "user_id"))
+        uid = ObjectId(getattr(request, "user_id"))  # 데코레이터가 세팅
         day = local_date_str()
 
         doc = db.attendance.find_one({"user_id": uid}, {f"days.{day}": 1, "_id": 0}) or {}
@@ -63,7 +63,7 @@ def today(current_user):
             "actions": block.get("actions", []),
             "counts": block.get("counts", {}),
             "first_action_at": block.get("first_action_at"),
-            "last_action_at": block.get("last_action_at")
+            "last_action_at": block.get("last_action_at"),
         }, 200)
     except Exception as e:
         current_app.logger.exception(e)
@@ -125,9 +125,6 @@ def calendar_me():
 
         dt_start = datetime.strptime(start, "%Y-%m-%d")
         dt_end   = datetime.strptime(end,   "%Y-%m-%d")
-        if dt_end < dt_start:
-            return _json({"error": "end가 start보다 앞설 수 없습니다."}, 400)
-
         n = (dt_end - dt_start).days + 1
         dates = [(dt_start + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(n)]
 
