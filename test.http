@@ -3,6 +3,22 @@
 
 @token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjkwMzhlZDBiNzY4OWJkNjM4YjY4OGU2Iiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjE5NDA0NDB9.PeT47Am2riLEncq9Wa7bOXfhCbcheDwgzyQ2iMxOfNY
 
+### 이메일 중복 확인
+POST {{host}}/api/users/email/check
+Content-Type: application/json
+
+{
+  "email": "chelin02@naver.com"
+}
+
+### 이메일 인증코드 발송
+POST {{host}}/api/users/email/send-code
+Content-Type: application/json
+
+{
+  "email": "chelin02@naver.com"
+}
+
 ### 🔐 회원가입
 POST {{host}}/api/users/signup
 Content-Type: application/json
@@ -15,7 +31,9 @@ Content-Type: application/json
   "status": "대학생",
   "email": "chelin02@naver.com", 
   "address": "Seoul",
-  "phone": "01012345678"
+  "phone": "01012345678",
+  "email_verification_token": "725359",
+  "email_notify_enabled": true
 }
 
 ### 🔐 로그인
@@ -48,6 +66,15 @@ Authorization: Bearer {{token}}
 {
   "current_password": "12345678",
   "new_password": "00000000"
+}
+
+### 이메일 수신 동의/거부
+PATCH {{host}}/api/users/email/consent
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email_notify_enabled": false
 }
 
 ### 🔒 인증 확인

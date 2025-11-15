@@ -129,7 +129,7 @@ def send_email_code():
     """
 
     ok, err = send_email(
-        to=email,
+        to_email=email,
         subject=subject,
         html=html
     )
