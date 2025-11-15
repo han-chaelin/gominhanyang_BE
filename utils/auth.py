@@ -3,7 +3,9 @@ import json
 from functools import wraps
 from flask import request, Response
 from datetime import datetime, timedelta
-from utils.config import JWT_SECRET_KEY, JWT_ALGORITHM, APP_BASE_URL
+from utils.config import JWT_SECRET_KEY, JWT_ALGORITHM
+from utils.db import db
+from bson.objectid import ObjectId
 
 # 한글 JSON 응답 헬퍼
 def json_kor(data, status=200):
@@ -14,6 +16,30 @@ def json_kor(data, status=200):
     )
 
 # JWT 인증 데코레이터
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return json_kor({"error": "Authorization 헤더가 필요합니다."}, 401)
+        token = auth_header.split(" ")[1]
+        try:
+            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+            user_id = payload["user_id"]
+            user = db.user.find_one({"_id": ObjectId(user_id)})
+            if not user:
+                return json_kor({"error": "사용자를 찾을 수 없습니다."}, 404)
+            request.user = user
+            request.user_id = str(user["_id"])
+        except jwt.ExpiredSignatureError:
+            return json_kor({"error": "토큰이 만료되었습니다."}, 401)
+        except jwt.InvalidTokenError:
+            return json_kor({"error": "유효하지 않은 토큰입니다."}, 401)
+        return f(*args, **kwargs)
+    return decorated
+
+'''
+# 기존 버전
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -38,13 +64,4 @@ def token_required(f):
 
         return f(*args, **kwargs)
     return decorated
-
-# 이메일 인증용 토큰 생성
-def generate_email_verify_token(user_id: str) -> str:
-    """이메일 인증용 JWT 토큰 생성"""
-    payload = {
-        "sub": user_id,          # 누구를 인증하는지
-        "type": "email_verify",  # 토큰 용도 구분
-        "exp": datetime.utcnow() + timedelta(hours=24)  # 24시간 유효
-    }
-    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+'''

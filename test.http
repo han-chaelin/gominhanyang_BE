@@ -37,24 +37,6 @@ Content-Type: application/json
 Authorization: {{token}}
 
 {
-  "phone": "01000000000"
-}
-
-### 이메일 알림 동의 ON
-PATCH {{host}}/api/users/update
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "email_notify_enabled": true
-}
-
-### 이메일 알림 동의 OFF
-PATCH {{host}}/api/users/update
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
   "email_notify_enabled": false
 }
 
