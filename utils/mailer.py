@@ -7,7 +7,11 @@ from utils.config import (
     SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD,
     EMAIL_FROM, EMAIL_USE_TLS, APP_BASE_URL
 )
+from utils.auth import generate_email_verify_token
 
+# ------------------
+# 이메일 발송
+# ------------------
 def _format_from_header(raw_from: str) -> str:
     """
     EMAIL_FROM가 '마음의 항해 <foo@bar.com>' 또는 'foo@bar.com' 어떤 형태든
@@ -78,3 +82,25 @@ def tpl_random_received(nickname: str, letter_title: str, app_url: str):
     <p><a href="{app_url}/letters/inbox">편지 보러가기</a></p>
     <hr><small>발송시각: {ts}</small>
     """
+
+# ------------------
+# 회원가입 시 이메일 인증 메일 전송
+# ------------------
+def send_email_verification(user):
+
+    token = generate_email_verify_token(str(user["_id"]))
+    verify_url = f"{APP_BASE_URL}/verify-email?token={token}"
+
+    subject = "[마음의 항해] 이메일 인증을 완료해주세요"
+    html = f"""
+    <h3>{user['nickname']}님, 반가워요 🦭</h3>
+    <p>[마음의 항해]에서 편지 알림을 받으려면 이메일 인증이 필요해요.</p>
+    <p><a href="{verify_url}">여기를 눌러 이메일 인증 완료하기</a></p>
+    <p>이 링크는 24시간 동안만 유효해요.</p>
+    """
+
+    send_email(
+        to=user["email"],
+        subject=subject,
+        html=html
+    )

@@ -168,7 +168,7 @@ def create_app():
     app.register_blueprint(satisfaction_bp, url_prefix="/satisfaction", strict_slashes=False)
     app.register_blueprint(report_routes, url_prefix="/api")
     app.register_blueprint(attendance_routes, url_prefix="/attendance")
-    
+
     # ✅ 보호된 API 예시
     @app.route("/api/users/protected", methods=["GET"])
     @token_required
