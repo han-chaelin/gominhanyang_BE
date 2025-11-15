@@ -89,7 +89,7 @@ def tpl_random_received(nickname: str, letter_title: str, app_url: str):
 def send_email_verification(user):
 
     token = generate_email_verify_token(str(user["_id"]))
-    verify_url = f"{APP_BASE_URL}/verify-email?token={token}"
+    verify_url = f"https://maeum-sailing-backend.onrender.com/api/users/verify-email?token={token}"
 
     subject = "[마음의 항해] 이메일 인증을 완료해주세요"
     html = f"""
