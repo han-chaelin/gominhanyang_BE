@@ -334,7 +334,7 @@ def update_user():
         if "email_notify_enabled" in update_fields:
             raw_val = update_fields["email_notify_enabled"]
 
-            # true/false (파이썬 bool)로 들어온 경우
+            # true/false로 들어온 경우
             if isinstance(raw_val, bool):
                 parsed = raw_val
             # 혹시 프론트에서 문자열로 보낼 수도 있으니 안전하게 처리
