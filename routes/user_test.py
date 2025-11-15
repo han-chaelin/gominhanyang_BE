@@ -45,7 +45,7 @@ def json_kor(data, status=200):
     )
 
 def create_token(user_doc):
-    expire = datetime.utcnow() + datetime.timedelta(
+    expire = datetime.utcnow() + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
     payload = {
@@ -216,7 +216,7 @@ def login():
 
         ##### 더미용 데이터 - 실제 배포 시에는 삭제 ####
         """letter = {"_id": ObjectId(), "from": ObjectId('68260f67f02ef2dccfdeffca'), "to": user_id, "title": '익명의 사용자에게서 온 편지',"emotion": '슬픔', "content": '정말 친하다고 생각했던 친구와 크게 싸웠어요. 좋은 친구라고 생각했는데 아니였던 것 같아요 우정이 영원할 수는 없는 걸까요?', "status": 'sent',
-              "saved": False, "created_at": datetime.datetime.now()}
+              "saved": False, "created_at": datetime.now()}
         db.letter.insert_one(letter)"""
 
         return json_kor({
@@ -497,7 +497,7 @@ def change_password():
             return json_kor({"error": "기존 비밀번호와 동일한 비밀번호는 사용할 수 없습니다."}, 400)
 
         # 업데이트
-        updated_at = datetime.datetime.utcnow()
+        updated_at = datetime.utcnow()
         db.user.update_one(
             {"_id": user["_id"]},
             {"$set": {

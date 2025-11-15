@@ -40,20 +40,6 @@ Authorization: {{token}}
   "phone": "01000000000"
 }
 
-### 비밀번호 변경
-POST {{host}}/api/users/password/change
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "current_password": "12345678",
-  "new_password": "00000000"
-}
-
-### 🔒 인증 확인
-GET {{host}}/api/users/protected
-Authorization: {{token}}
-
 ### 이메일 알림 동의 ON
 PATCH {{host}}/api/users/update
 Content-Type: application/json
@@ -72,6 +58,19 @@ Authorization: Bearer {{token}}
   "email_notify_enabled": false
 }
 
+### 비밀번호 변경
+POST {{host}}/api/users/password/change
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "current_password": "12345678",
+  "new_password": "00000000"
+}
+
+### 🔒 인증 확인
+GET {{host}}/api/users/protected
+Authorization: {{token}}
 
 ### 💌 편지 전송: 나에게
 POST {{host}}/letter/send
