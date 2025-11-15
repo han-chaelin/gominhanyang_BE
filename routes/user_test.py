@@ -136,6 +136,7 @@ def signup():
             "limited_access": limited_access,
             "email_verified": False,
             "email_verified_at": None,
+            "email_notify_enabled": False,
             "created_at": datetime.utcnow(),
         }
 
@@ -152,38 +153,6 @@ def signup():
         return json_kor({
             "message": "회원가입 신청이 완료되었습니다. 이메일을 인증하면 가입이 완료됩니다.",
             "limited_access": limited_access
-        }, 201)
-    except Exception as e:
-        return json_kor({"error": str(e)}, 500)
-    
-        # 온보딩 더미 편지(기존 로직 유지)
-        letter = {
-            "_id": ObjectId(),
-            "from": ObjectId('68260f67f02ef2dccfdeffca'),
-            "to": result.inserted_id,
-            "title": '익명의 사용자에게서 온 편지',
-            "emotion": '슬픔',
-            "content": '정말 친하다고 생각했던 친구와 크게 싸웠어요. 좋은 친구라고 생각했는데 아니였던 것 같아요 우정이 영원할 수는 없는 걸까요?',
-            "status": 'sent',
-            "saved": False,
-            "created_at": datetime.datetime.now()
-        }
-        db.letter.insert_one(letter)
-
-        try:
-            send_email_verification(user_doc)
-        except Exception as e:
-            current_app.logger.warning(f"[mail] email verification failed: {e}")
-
-        return json_kor({
-            "message": "회원가입 성공!",
-            "nickname": user_doc["nickname"],
-            "age": user_doc["age"],
-            "gender": user_doc["gender"],
-            "status": user_doc["status"],
-            "email": user_doc["email"],
-            "limited_access": limited_access,
-            "token": token
         }, 201)
     except Exception as e:
         return json_kor({"error": str(e)}, 500)
@@ -329,7 +298,9 @@ def update_user():
         data = request.get_json()
 
         # 나이와 성별은 수정에서 제외
-        update_fields = {k: v for k, v in data.items() if k in ['nickname', 'status', 'email', 'address', 'phone']}
+        allowed_fields = ['nickname', 'status', 'email', 'address', 'phone', 'email_notify_enabled']
+        update_fields = {k: v for k, v in data.items() if k in allowed_fields}
+
         # 아무 필드도 제공되지 않았을 경우 예외 처리
         if not update_fields:
             return json_kor({"error": "수정할 항목이 제공되지 않았습니다."}, 400)
@@ -358,6 +329,33 @@ def update_user():
             if db.user.find_one({"email": email, "_id": {"$ne": user_id}}):
                 return json_kor({"error": "이미 등록된 이메일입니다."}, 400)
             update_fields["email"] = email  
+
+        # 이메일 알림 동의: boolean 값 검증
+        if "email_notify_enabled" in update_fields:
+            raw_val = update_fields["email_notify_enabled"]
+
+            # true/false (파이썬 bool)로 들어온 경우
+            if isinstance(raw_val, bool):
+                parsed = raw_val
+            # 혹시 프론트에서 문자열로 보낼 수도 있으니 안전하게 처리
+            elif isinstance(raw_val, str):
+                v = raw_val.strip().lower()
+                if v in ["true", "1", "yes", "y", "on"]:
+                    parsed = True
+                elif v in ["false", "0", "no", "n", "off"]:
+                    parsed = False
+                else:
+                    return json_kor(
+                        {"error": "email_notify_enabled 값은 true/false 여야 합니다."}, 
+                        400
+                    )
+            else:
+                return json_kor(
+                    {"error": "email_notify_enabled 값은 boolean 이거나 이에 준하는 문자열이어야 합니다."}, 
+                    400
+                )
+
+            update_fields["email_notify_enabled"] = parsed
 
         db.user.update_one({"_id": user_id}, {"$set": update_fields})
 
@@ -430,7 +428,8 @@ def get_my_info():
             "phone": user.get("phone", ""),
             "point": user.get("point", 0),
             "level": user.get("level", 1),
-            "limited_access": user.get("limited_access", True)
+            "limited_access": user.get("limited_access", True),
+            "email_notify_enabled": user.get("email_notify_enabled", False),
         }
         return json_kor({"user": user_info}, 200)
     except Exception as e:

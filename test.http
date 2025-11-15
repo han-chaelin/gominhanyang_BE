@@ -54,6 +54,25 @@ Authorization: Bearer {{token}}
 GET {{host}}/api/users/protected
 Authorization: {{token}}
 
+### 이메일 알림 동의 ON
+PATCH {{host}}/api/users/update
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email_notify_enabled": true
+}
+
+### 이메일 알림 동의 OFF
+PATCH {{host}}/api/users/update
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email_notify_enabled": false
+}
+
+
 ### 💌 편지 전송: 나에게
 POST {{host}}/letter/send
 Content-Type: application/json
