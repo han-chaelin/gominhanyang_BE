@@ -206,7 +206,7 @@ def login():
         if not user_doc.get("email_verified"):
             return json_kor({
                 "error": "이메일 인증이 완료되지 않은 계정입니다. 이메일을 먼저 인증해주세요."
-            }, 401)
+            }, 403)
         
         token = create_token(user_doc)
 
