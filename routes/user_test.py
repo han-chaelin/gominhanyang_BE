@@ -531,7 +531,7 @@ def verify_email():
         return jsonify({"error": "이메일 인증 토큰이 아닙니다."}), 400
 
     user_id = payload.get("sub")
-    user = db.users.find_one({"_id": ObjectId(user_id)})
+    user = db.user.find_one({"_id": ObjectId(user_id)})
     if not user:
         return jsonify({"error": "사용자를 찾을 수 없습니다."}), 404
 

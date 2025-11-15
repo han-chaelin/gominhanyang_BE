@@ -100,7 +100,7 @@ def send_email_verification(user):
     """
 
     send_email(
-        to=user["email"],
+        to_email=user["email"],
         subject=subject,
         html=html
     )
