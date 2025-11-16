@@ -7,7 +7,7 @@ from functools import wraps
 import jwt, json, re, random
 from utils.db import db
 from utils.config import JWT_SECRET_KEY, JWT_ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, APP_BASE_URL
-from utils.attendance import mark_attendance_login, attended_today, record_attendance
+from utils.attendance import record_attendance
 from utils.auth import token_required
 from utils.response import json_kor
 from utils.mailer import send_email
@@ -48,44 +48,31 @@ def create_token(user_doc):
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
-# 이메일 중복 체크
-@user_test.route('/email/check', methods=['POST'])
-def check_email():
-    data = request.get_json() or {}
-    email = (data.get('email') or '').strip().lower()
-
-    if not email:
-        return json_kor({"error": "이메일을 입력해주세요."}, 400)
-
-    if not is_valid_email(email):
-        return json_kor({"error": "올바른 이메일 형식이 아닙니다."}, 400)
-
-    existed = db.user.find_one({"email": email})
-    if existed:
-        return json_kor({
-            "available": False,
-            "reason": "이미 가입된 이메일입니다."
-        }, 200)
-
-    return json_kor({"available": True}, 200)
-
 @user_test.route('/email/send-code', methods=['POST'])
 def send_email_code():
     data = request.get_json() or {}
     email = (data.get('email') or '').strip().lower()
 
+    # 1) 이메일 유효성 체크
     if not email:
         return json_kor({"error": "이메일을 입력해주세요."}, 400)
 
     if not is_valid_email(email):
         return json_kor({"error": "올바른 이메일 형식이 아닙니다."}, 400)
 
+    # 2) 이미 가입된 이메일인지 체크
+    existed = db.user.find_one({"email": email})
+    if existed:
+        return json_kor({
+            "error": "이미 가입된 이메일입니다. 다른 이메일로 시도해주세요."
+        }, 400)
+
     now = datetime.utcnow()
 
-    # 최근 인증코드 기록 가져오기
+    # 3) 최근 인증코드 기록 가져오기
     record = db.email_verification.find_one({"email": email})
 
-    # 재발송 쿨타임 체크
+    # 4) 재발송 쿨타임 체크
     if record and record.get("last_sent_at"):
         last = record["last_sent_at"]
         if isinstance(last, datetime):
@@ -97,12 +84,12 @@ def send_email_code():
                     "retry_after": remain
                 }, 429)
 
-    # 6자리 코드 생성
+    # 5) 6자리 코드 생성
     code = f"{random.randint(0, 999999):06d}"
     code_hash = generate_password_hash(code)
     expires_at = now + timedelta(minutes=CODE_EXPIRE_MINUTES)
 
-    # upsert (있으면 업데이트, 없으면 새 문서 생성)
+    # 6) upsert (있으면 업데이트, 없으면 새 문서 생성)
     db.email_verification.update_one(
         {"email": email},
         {
@@ -119,7 +106,7 @@ def send_email_code():
         upsert=True
     )
 
-    # 이메일 발송
+    # 7) 이메일 발송
     subject = "[마음의 항해] 이메일 인증코드 안내"
     html = f"""
     <h3>이메일 인증코드 안내</h3>
@@ -140,8 +127,7 @@ def send_email_code():
 
     return json_kor({
         "message": "인증코드를 이메일로 전송했습니다.",
-        "expire_minutes": CODE_EXPIRE_MINUTES,
-        "cooldown_seconds": EMAIL_CODE_RESEND_COOLDOWN
+        "expire_minutes": CODE_EXPIRE_MINUTES
     }, 200)
 
 @user_test.route('/email/verify-code', methods=['POST'])
@@ -374,9 +360,18 @@ def signup():
         except Exception as e:
             current_app.logger.warning(f"[onboarding_letter] failed: {e}")
 
-        # 여기서는 바로 로그인 JWT를 발급하지 않고, 회원가입 성공만 알려줌
+        # 생성한 유저 문서 조회 후 토큰 발급
+        user_doc = db.user.find_one({"_id": result.inserted_id})
+        token = create_token(user_doc)
+
         return json_kor({
-            "message": "회원가입이 완료되었습니다. 이제 로그인할 수 있어요.",
+            "message": "회원가입 성공!",
+            "token": token,
+            "nickname": user_doc["nickname"],
+            "age": user_doc["age"],
+            "gender": user_doc["gender"],
+            "status": user_doc["status"],
+            "email": user_doc["email"],
             "limited_access": limited_access
         }, 201)
     except Exception as e:
@@ -428,7 +423,7 @@ def login():
         if not check_password_hash(user_doc["password_hash"], password):
             return json_kor({"error": "비밀번호가 올바르지 않습니다."}, 401)
 
-        # ✅ 이메일 인증 여부 체크
+        # 이메일 인증 여부 체크
         if not user_doc.get("email_verified"):
             return json_kor({
                 "error": "이메일 인증이 완료되지 않은 계정입니다. 이메일을 먼저 인증해주세요."
@@ -716,88 +711,3 @@ def change_password():
 
     except Exception as e:
         return json_kor({"error": str(e)}, 500)
-    
-@user_test.route('/email/consent', methods=['PATCH'])
-@token_required
-@swag_from({
-    'tags': ['User'],
-    'summary': '이메일 수신 동의/거부',
-    'description': '서비스 알림/편지 도착 알림 등 이메일 수신에 대한 동의 여부를 설정합니다.',
-    'parameters': [
-        {
-            'name': 'Authorization',
-            'in': 'header',
-            'type': 'string',
-            'required': True,
-            'description': 'Bearer 액세스 토큰'
-        }
-    ],
-    'requestBody': {
-        'required': True,
-        'content': {
-            'application/json': {
-                'schema': {
-                    'type': 'object',
-                    'properties': {
-                        'email_notify_enabled': {
-                            'type': 'boolean',
-                            'description': '이메일 수신 동의 여부 (true: 동의, false: 거부)'
-                        }
-                    },
-                    'required': ['email_notify_enabled']
-                }
-            }
-        }
-    },
-    'responses': {
-        200: {'description': '동의 상태 변경 성공'},
-        400: {'description': '잘못된 입력 값'},
-        401: {'description': '인증 실패'},
-        500: {'description': '서버 에러'}
-    }
-})
-def update_email_consent():
-    try:
-        user = request.user
-        data = request.get_json(force=True) or {}
-
-        raw_val = data.get("email_notify_enabled", None)
-        if raw_val is None:
-            return json_kor({"error": "email_notify_enabled 값은 필수입니다."}, 400)
-
-        # true/false로 들어온 경우
-        if isinstance(raw_val, bool):
-            parsed = raw_val
-        # 문자열로 들어올 수도 있으니 처리
-        elif isinstance(raw_val, str):
-            v = raw_val.strip().lower()
-            if v in ["true", "1", "yes", "y", "on"]:
-                parsed = True
-            elif v in ["false", "0", "no", "n", "off"]:
-                parsed = False
-            else:
-                return json_kor({"error": "email_notify_enabled 값은 true/false 여야 합니다."}, 400)
-        else:
-            return json_kor(
-                {"error": "email_notify_enabled 값은 boolean 이거나 이에 준하는 문자열이어야 합니다."},
-                400
-            )
-
-        db.user.update_one(
-            {"_id": user["_id"]},
-            {
-                "$set": {
-                    "email_notify_enabled": parsed,
-                    "updated_at": datetime.utcnow()
-                }
-            }
-        )
-
-        return json_kor({
-            "message": "이메일 수신 동의 상태가 변경되었습니다.",
-            "email_notify_enabled": parsed
-        }, 200)
-
-    except Exception as e:
-        current_app.logger.error(f"[update_email_consent] {e}")
-        return json_kor({"error": "서버 오류가 발생했습니다."}, 500)
