@@ -229,7 +229,6 @@ def send_letter():
     # 필수값 확인
     if not (to_type and content and emotion):
         return json_kor({"error": "필수 정보 누락"}, 400)
-    
 
     # 수신자 결정
     if to_type == 'self':
@@ -255,7 +254,7 @@ def send_letter():
         "emotion": emotion, 
         "content": content, 
         "status": 'sent',
-        "saved": to_type in ['self', 'volunteer'], 
+        "saved": True,  # 작성하면 무조건 보관함에 저장
         "created_at": datetime.now()
     }
     db.letter.insert_one(letter)
@@ -265,17 +264,6 @@ def send_letter():
         ok, err = notify_random_received(str(receiver), str(letter["_id"]), debug_mail=MAIL_DEBUG)
         if not ok:
             app.logger.warning(f"[mail] notify_random_received fail: {err}")
-
-        '''
-        try:
-            app.logger.info(f"[mail] random_notify TRY user_id={receiver} lid={letter['_id']}")
-            ok, err = notify_random_received(str(receiver), str(letter['_id']), debug_mail=MAIL_DEBUG)
-            app.logger.info(f"[mail] random_notify RESULT ok={ok} err={err}")
-            if not ok:
-                app.logger.error(f"[mail] random_notify FAIL: {err}")
-        except Exception as e:
-            app.logger.exception(f"[mail] random_notify EXC: {e}")
-        '''
 
     ### 유저 테스트용 - 실제 배포 시에는 삭제 ####
     """
@@ -566,6 +554,8 @@ def reply_letter():
         except Exception as e:
             app.logger.exception(f"[mail] reply_notify EXC: {e}")
         '''
+    
+    return json_kor({"message": "답장 완료"}, 200)
 
 @letter_routes.route('/replied-to-me', methods=['GET'])
 @token_required
@@ -596,7 +586,6 @@ def get_replied_letters_to_me():
     letters = list(db.letter.find({
         'from': user,
         'status': {'$in': ['replied', 'auto_replied']},
-        'saved': {'$ne': True}  # 저장되지 않은 편지만 조회
     }, {
         '_id': 1, 'to': 1, 'title': 1, 'emotion': 1, 'content': 1,
         'status': 1, 'replied_at': 1

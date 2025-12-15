@@ -1,22 +1,23 @@
 @host = http://127.0.0.1:5000
 # @host = https://dev-server-4t3n.onrender.com
 
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjkwMzhlZDBiNzY4OWJkNjM4YjY4OGU2Iiwibmlja25hbWUiOiJtYXN0ZXIiLCJleHAiOjE3NjE5NDA0NDB9.PeT47Am2riLEncq9Wa7bOXfhCbcheDwgzyQ2iMxOfNY
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjkzZmRmNThlMWI1OTI0YjhiMDkxYWJiIiwibmlja25hbWUiOiJcdWNjNDRcdWNjNDQiLCJleHAiOjE3NjU4ODAwNDN9.VBp4vNUF_a-KhEAeaSB6VjVyzrfLP1r7jxI0sEKGGD0
 
-### 이메일 중복 확인
-POST {{host}}/api/users/email/check
+### 1) 이메일 인증코드 발송
+POST {{host}}/api/users/email/send-code
 Content-Type: application/json
 
 {
   "email": "chelin02@naver.com"
 }
 
-### 이메일 인증코드 발송
-POST {{host}}/api/users/email/send-code
+### 2) 이메일 인증코드 검증 (성공 시 email_verification_token 발급)
+POST {{host}}/api/users/email/verify-code
 Content-Type: application/json
 
 {
-  "email": "chelin02@naver.com"
+  "email": "chelin02@naver.com",
+  "code": "284281"
 }
 
 ### 🔐 회원가입
@@ -32,7 +33,7 @@ Content-Type: application/json
   "email": "chelin02@naver.com", 
   "address": "Seoul",
   "phone": "01012345678",
-  "email_verification_token": "725359",
+  "email_verification_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjaGVsaW4wMkBuYXZlci5jb20iLCJ0eXBlIjoiZW1haWxfc2lnbnVwIiwiZXhwIjoxNzY1Nzk1NDExfQ.7fw2EyTxwTgMw2NN_mbnvFvR5JeVl1lwnao2EAh5bs8",
   "email_notify_enabled": true
 }
 
@@ -41,8 +42,8 @@ POST {{host}}/api/users/login
 Content-Type: application/json
 
 {
-  "nickname": "master",
-  "password": "00000000"
+  "nickname": "채채",
+  "password": "20021110"
 }
 
 ### 사용자 정보 조회
